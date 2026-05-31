@@ -1,21 +1,30 @@
 <view class="wrap">
-  <view class="card">
-    <h2>{{ssid || 'WiFi'}}</h2>
-    <view class="row"><text class="muted">广告</text><text>已完成</text></view>
-    <view class="row"><text class="muted">连接权限</text><text>{{unlocked ? '已解锁' : '解锁中...'}}</text></view>
+  <view class="page-head">
+    <view class="mark">连接 WiFi</view>
+    <view class="pill {{connected ? '' : (failed ? 'red' : 'amber')}}">{{connected ? '已连接' : (failed ? '需兜底' : '可连接')}}</view>
   </view>
 
-  <view class="btn" bindtap="connect" wx:if="{{unlocked && !connected}}">一键连接 WiFi</view>
-  <view class="card" wx:if="{{connected}}" style="text-align:center">
-    <text style="color:#158474;font-weight:700">✓ 已连接 {{ssid}}</text>
+  <view class="card status-card">
+    <view class="wifi-icon">{{connected ? '✓' : '📶'}}</view>
+    <h2 class="ssid-title">{{ssid || 'WiFi'}}</h2>
+    <view class="row"><text class="muted">广告</text><text class="v ok">已完成</text></view>
+    <view class="row"><text class="muted">连接权限</text><text class="v {{unlocked ? 'ok' : ''}}">{{unlocked ? '已解锁' : '解锁中...'}}</text></view>
   </view>
 
-  <view class="card" wx:if="{{failed}}">
+  <view class="btn btn-hero btn-hover" hover-class="btn-hover" bindtap="connect" wx:if="{{unlocked && !connected}}">一键连接 WiFi</view>
+
+  <view class="card success-card" wx:if="{{connected}}">
+    <text class="success-text">✓ 已连接 {{ssid}}</text>
+    <text class="muted">现在可以正常上网啦。</text>
+  </view>
+
+  <view class="card fallback" wx:if="{{failed}}">
     <h2>连接失败兜底</h2>
-    <view class="row" bindtap="togglePassword">
+    <text class="muted">自动连接没成功？复制密码手动连接即可。</text>
+    <view class="row" bindtap="togglePassword" hover-class="btn-hover">
       <text class="muted">WiFi 密码</text>
-      <text>{{showPassword ? password : '点击展开'}}</text>
+      <text class="v">{{showPassword ? password : '点击展开'}}</text>
     </view>
-    <view class="btn ghost" bindtap="copyPassword">复制密码手动连接</view>
+    <view class="btn ghost btn-hover" hover-class="btn-hover" bindtap="copyPassword">复制密码手动连接</view>
   </view>
 </view>

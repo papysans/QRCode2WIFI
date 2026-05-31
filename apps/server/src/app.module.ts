@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './prisma/prisma.module';
+import { WechatModule } from './wechat/wechat.module';
 import { AdaptersModule } from './adapters/adapters.module';
 import { AuthModule } from './auth/auth.module';
 import { ShopsModule } from './shops/shops.module';
@@ -15,6 +16,7 @@ import { StatsModule } from './stats/stats.module';
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     PrismaModule,
+    WechatModule,
     AdaptersModule,
     AuthModule,
     ShopsModule,

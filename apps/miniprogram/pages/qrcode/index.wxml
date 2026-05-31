@@ -1,9 +1,19 @@
 <view class="wrap" wx:if="{{qr}}">
-  <view class="card" style="text-align:center">
+  <view class="page-head">
+    <view class="mark">门店二维码</view>
+    <view class="pill blue">已生成</view>
+  </view>
+
+  <view class="card qr-card">
     <h2>{{shop.name}} 专属二维码</h2>
-    <image src="{{qr.imageUrl}}" style="width:360rpx;height:360rpx;margin:24rpx auto" mode="aspectFit" />
-    <text class="muted">扫码路径：{{qr.path}}</text>
-    <view class="btn ghost" bindtap="copyLink">复制店铺链接</view>
-    <text class="muted" style="display:block;margin-top:16rpx">二维码只携带 sid，不含明文密码。</text>
+    <view class="qr-frame">
+      <image src="{{qr.imageUrl}}" class="qr-img" mode="aspectFit" />
+    </view>
+    <view class="qr-path">
+      <text class="muted">扫码路径</text>
+      <text class="path-v">{{qr.path}}</text>
+    </view>
+    <view class="btn ghost btn-hover" hover-class="btn-hover" bindtap="copyLink">复制店铺链接</view>
+    <text class="muted tip">二维码只携带 sid，不含明文密码，顾客扫码后只进入本店连接页。</text>
   </view>
 </view>

@@ -1,0 +1,35 @@
+.tiles {
+  display: flex;
+  gap: 18rpx;
+  margin-bottom: 26rpx;
+}
+.tile {
+  flex: 1;
+  border-radius: 24rpx;
+  padding: 30rpx 18rpx;
+  text-align: center;
+  border: 1rpx solid #e5dccf;
+  background: #fffdf8;
+  box-shadow: 0 12rpx 30rpx rgba(43, 34, 20, 0.06);
+}
+.tile.teal { background: linear-gradient(160deg, #eef9f5, #fffdf8); border-color: #bee8df; }
+.tile.amber { background: linear-gradient(160deg, #fff6e3, #fffdf8); border-color: #ead096; }
+.tile.blue { background: linear-gradient(160deg, #eaf1fa, #fffdf8); border-color: #c9d8ed; }
+.tile-num {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.tile-label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: var(--muted);
+}
+.v.ok { color: #158474; }
+.v.fail { color: #a84d31; }
+.note-card {
+  background: var(--paper-2);
+}

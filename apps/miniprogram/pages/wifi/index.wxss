@@ -1,0 +1,33 @@
+.status-card {
+  text-align: center;
+}
+.wifi-icon {
+  font-size: 80rpx;
+  margin-bottom: 8rpx;
+}
+.ssid-title {
+  font-size: 36rpx;
+  margin-bottom: 16rpx;
+}
+.status-card .row { text-align: left; }
+.v.ok { color: #158474; }
+.btn-hero {
+  padding: 32rpx;
+  font-size: 34rpx;
+}
+.success-card {
+  text-align: center;
+  border-color: #bee8df;
+  background: linear-gradient(160deg, #eef9f5, #fffdf8);
+}
+.success-text {
+  display: block;
+  color: #09675a;
+  font-weight: 800;
+  font-size: 32rpx;
+  margin-bottom: 8rpx;
+}
+.fallback {
+  border-color: #ead096;
+  background: linear-gradient(160deg, #fff8e8, #fffdf8);
+}

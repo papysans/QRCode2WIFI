@@ -1,0 +1,11 @@
+.hero {
+  background: linear-gradient(160deg, #fffefb, #f4eee0);
+}
+.empty {
+  text-align: center;
+  padding: 56rpx 30rpx;
+}
+.empty-icon {
+  font-size: 72rpx;
+  margin-bottom: 18rpx;
+}

@@ -1,13 +1,31 @@
 <view class="wrap" wx:if="{{stat}}">
-  <view class="card">
-    <h2>累计数据</h2>
-    <view class="row"><text class="muted">扫码人次</text><text>{{stat.scans}}</text></view>
-    <view class="row"><text class="muted">广告完成</text><text>{{stat.adCompletes}}</text></view>
-    <view class="row"><text class="muted">连接点击</text><text>{{stat.connectClicks}}</text></view>
-    <view class="row"><text class="muted">连接成功</text><text>{{stat.connectSuccess}}</text></view>
-    <view class="row"><text class="muted">连接失败</text><text>{{stat.connectFail}}</text></view>
+  <view class="page-head">
+    <view class="mark">店铺数据</view>
+    <view class="pill blue">累计</view>
   </view>
+
+  <view class="tiles">
+    <view class="tile teal">
+      <text class="tile-num">{{stat.scans}}</text>
+      <text class="tile-label">扫码人次</text>
+    </view>
+    <view class="tile amber">
+      <text class="tile-num">{{stat.adCompletes}}</text>
+      <text class="tile-label">广告完成</text>
+    </view>
+    <view class="tile blue">
+      <text class="tile-num">{{stat.connectClicks}}</text>
+      <text class="tile-label">连接点击</text>
+    </view>
+  </view>
+
   <view class="card">
+    <h2>连接明细</h2>
+    <view class="row"><text class="muted">连接成功</text><text class="v ok">{{stat.connectSuccess}}</text></view>
+    <view class="row"><text class="muted">连接失败</text><text class="v fail">{{stat.connectFail}}</text></view>
+  </view>
+
+  <view class="card note-card">
     <text class="muted">第一版只展示基础数据，目标是验证使用量。</text>
   </view>
 </view>

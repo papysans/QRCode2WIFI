@@ -1,22 +1,29 @@
 <view class="wrap">
-  <view class="card">
-    <h2>我的店铺</h2>
-    <text class="muted">你创建的店铺会出现在这里，创建后即成为 owner。</text>
-    <view class="btn" bindtap="goCreate">+ 创建店铺</view>
+  <view class="page-head">
+    <view class="mark">我的店铺</view>
+    <view class="pill blue">管理</view>
+  </view>
+
+  <view class="card hero">
+    <h2>欢迎回来</h2>
+    <text class="lead">你创建的店铺会出现在这里，创建后即成为该店铺 owner。</text>
+    <view class="btn blue btn-hover" hover-class="btn-hover" bindtap="goCreate">+ 创建店铺</view>
   </view>
 
   <view class="card" wx:if="{{shops.length}}">
     <h2>已有店铺</h2>
-    <view class="row" wx:for="{{shops}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
-      <view>
-        <view style="font-weight:700">{{item.name}}</view>
-        <text class="muted">WiFi：{{item.wifiSsid}}</text>
+    <view class="shop-row" wx:for="{{shops}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail" hover-class="btn-hover">
+      <view class="avatar {{index % 2 === 1 ? 'blue' : ''}}"></view>
+      <view class="info">
+        <view class="name">{{item.name}}</view>
+        <text class="muted">WiFi · {{item.wifiSsid}}</text>
       </view>
-      <text class="muted">进入 ›</text>
+      <text class="arrow">进入 ›</text>
     </view>
   </view>
 
-  <view class="card" wx:elif="{{!loading}}">
+  <view class="card empty" wx:elif="{{!loading}}">
+    <view class="empty-icon">🏪</view>
     <text class="muted">还没有店铺，点上方按钮创建第一个。</text>
   </view>
 </view>

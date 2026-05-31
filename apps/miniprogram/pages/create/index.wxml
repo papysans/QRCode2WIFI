@@ -1,4 +1,9 @@
 <view class="wrap">
+  <view class="page-head">
+    <view class="mark">创建店铺</view>
+    <view class="pill blue">填写 WiFi</view>
+  </view>
+
   <view class="card">
     <h2>基础信息</h2>
     <view class="field">
@@ -14,10 +19,11 @@
       <input class="input" data-field="wifiPassword" bindinput="onInput" placeholder="WiFi 密码" />
     </view>
   </view>
+
   <view class="card">
     <h2>可选展示</h2>
     <view class="field">
-      <view class="label">点评/团购链接</view>
+      <view class="label">点评 / 团购链接</view>
       <input class="input" data-field="reviewLink" bindinput="onInput" placeholder="可不填" />
     </view>
     <view class="field">
@@ -25,5 +31,7 @@
       <input class="input" data-field="phone" bindinput="onInput" placeholder="可不填" />
     </view>
   </view>
-  <view class="btn" bindtap="save">{{saving ? '保存中...' : '保存并生成二维码'}}</view>
+
+  <view class="btn blue btn-hover" hover-class="btn-hover" bindtap="save">{{saving ? '保存中...' : '保存并生成二维码'}}</view>
+  <text class="muted note">二维码只携带 sid，不会写入明文 WiFi 密码。</text>
 </view>

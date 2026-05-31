@@ -1,0 +1,42 @@
+.adbox {
+  text-align: center;
+  border: 1rpx solid #e7d2a6;
+  background: linear-gradient(160deg, #fff6dc, #fffdf7);
+  padding: 48rpx 30rpx;
+}
+.ad-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #765412;
+  margin-bottom: 8rpx;
+}
+.count {
+  font-size: 120rpx;
+  line-height: 1.1;
+  font-weight: 800;
+  color: #bf8425;
+  margin: 12rpx 0;
+}
+.progress {
+  height: 14rpx;
+  border-radius: 999rpx;
+  background: #ead4a1;
+  overflow: hidden;
+  margin: 24rpx 0 12rpx;
+}
+.progress .bar {
+  height: 100%;
+  background: linear-gradient(90deg, #bf8425, #e2b657);
+  border-radius: 999rpx;
+  transition: width 0.4s ease;
+}
+.hint {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+}
+.ad-fail {
+  font-size: 80rpx;
+  margin-bottom: 12rpx;
+}

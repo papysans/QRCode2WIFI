@@ -1,14 +1,28 @@
 <view class="wrap">
-  <view class="card" style="text-align:center;min-height:300rpx">
-    <h2>广告播放中</h2>
-    <view wx:if="{{playing}}">
+  <view class="page-head">
+    <view class="mark">激励视频</view>
+    <view class="pill amber">{{playing ? '播放中' : '未完成'}}</view>
+  </view>
+
+  <view class="card adbox">
+    <block wx:if="{{playing}}">
+      <text class="ad-title">广告播放中</text>
+      <view class="count">{{seconds}}</view>
       <text class="muted">剩余 {{seconds}} 秒后可连接 WiFi</text>
-      <view style="margin-top:24rpx;color:#bf8425;font-size:80rpx;font-weight:800">{{seconds}}</view>
-      <text class="muted" style="display:block;margin-top:24rpx">跳过广告将无法连接</text>
-    </view>
-    <view wx:else>
-      <text class="muted">广告未完成，无法连接 WiFi</text>
-      <view class="btn ghost" bindtap="back">返回重试</view>
-    </view>
+      <view class="progress"><view class="bar" style="width:{{(5 - seconds) / 5 * 100}}%"></view></view>
+      <text class="muted hint">跳过广告将无法连接</text>
+    </block>
+    <block wx:else>
+      <view class="ad-fail">⚠️</view>
+      <text class="ad-title">广告未完成</text>
+      <text class="muted">未看完广告，暂时无法连接 WiFi</text>
+      <view class="btn ghost btn-hover" hover-class="btn-hover" bindtap="back">返回重试</view>
+    </block>
+  </view>
+
+  <view class="card">
+    <h2>观看要求</h2>
+    <view class="row"><text class="muted">完成状态</text><text class="v">{{playing ? '观看中' : '未完成'}}</text></view>
+    <view class="row"><text class="muted">跳过广告</text><text class="v">不可连接</text></view>
   </view>
 </view>
