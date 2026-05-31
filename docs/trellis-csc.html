@@ -518,11 +518,187 @@
       </div>
     </section>
 
-    <!-- Section 3 -->
+    <!-- Section 3 · sub-agent 机制 -->
     <section class="section">
       <div class="section-head">
         <div>
-          <h2>Section 3 · 对 CSC 的提升</h2>
+          <h2>Section 3 · 聚焦特性 · sub-agent 机制</h2>
+          <p>挑一个最能体现 Trellis 工程巧思的特性细讲：子代理是怎么在「一睁眼」就拿到完整上下文的。关键不在于「派一个子代理」，而在于上下文是怎么被精确装配、并在子代理启动前注入的。</p>
+        </div>
+      </div>
+
+      <!-- (A) 注入流程 -->
+      <div class="flow-grid">
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">1</span><strong>主会话 dispatch</strong></div>
+          <p class="desc">主会话通过 Task 工具派发子代理（research / implement / check），dispatch 提示词首行写明 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">Active task: &lt;path&gt;</code>，声明当前活动任务。</p>
+          <div class="artifact"><span>触发</span><code>Task 工具</code></div>
+        </article>
+
+        <article class="journey-card">
+          <div class="step-head"><span class="num">2</span><strong>PreToolUse hook 拦截</strong></div>
+          <p class="desc">子代理「启动前」被 hook 拦下：解析平台 / 活动任务 → 读 implement.jsonl·check.jsonl 拼出 spec + prd → <strong>重写工具入参 prompt</strong>，并打上 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">&lt;!-- trellis-hook-injected --&gt;</code> 标记。</p>
+          <div class="artifact"><span>读取</span><code>implement.jsonl</code><code>check.jsonl</code></div>
+        </article>
+
+        <article class="journey-card ad">
+          <div class="step-head"><span class="num">3</span><strong>子代理一睁眼即满载</strong></div>
+          <p class="desc">子代理被实际拉起时，prompt 已包含完整 spec + prd 上下文，无需任何额外往返就能直接开干——上下文装配发生在它「醒来」之前。</p>
+          <div class="artifact"><span>效果</span><code>零额外往返</code></div>
+        </article>
+
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">4</span><strong>双模式兜底</strong></div>
+          <p class="desc">若 hook 未触发（如某平台不支持 PreToolUse），子代理读 dispatch 首行的 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">Active task:</code> 自行 pull 上下文。push 失败有 pull 接住。</p>
+          <div class="artifact"><span>保障</span><code>marker + 首行</code></div>
+        </article>
+      </div>
+
+      <!-- (B) 聪明设计 -->
+      <p class="callout" style="margin-top:18px;">
+        <b>活样本：</b>本项目里 check 子代理跑运行时冒烟，抓出了「单测全绿却启动崩溃」的 Nest DI bug，并自行修复——干净上下文 + 运行时验证，逮住了纯静态检查漏掉的问题。
+      </p>
+      <div class="data-map">
+        <div class="panel">
+          <span class="pin">1</span>
+          <h3>PreToolUse 改写入参</h3>
+          <p>拦截并重写工具入参注入上下文：行为由代码控制而非 prompt 措辞，确定性强、零往返——不依赖模型「记得」去拉文件。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">2</span>
+          <h3>每 agent 一份专属清单</h3>
+          <p>右上下文给右 agent：implement 拿全量 specs + prd，check 拿 check specs，research 拿目录树。jsonl 显式声明，互不串味。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">3</span>
+          <h3>角色硬边界 + 递归护栏</h3>
+          <p>research 只描述不评判、implement 禁 commit；「你已是该子代理，别再 spawn」防止子代理无限自我派发。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">4</span>
+          <h3>双模式 + 一 hook 通吃</h3>
+          <p>hook push 与 agent pull 互为兜底；同一套 hook 逻辑通吃 8+ 平台编码，不为每个平台各写一份。</p>
+        </div>
+      </div>
+
+      <!-- (C) 对 CSC 的提升 -->
+      <div class="model-head">
+        <div class="h1">Trellis 的外挂做法</div>
+        <div class="h2">CSC 可内化的原生能力</div>
+      </div>
+      <div class="model">
+        <div class="model-row">
+          <div class="from">PreToolUse hook 改写入参注入上下文</div>
+          <div class="to"><b>把「子代理上下文装配」做成原生 API</b>：dispatch 时声明 contextFiles，引擎负责注入，无需 hook 改写入参。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">marker + <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">Active task:</code> 双模式兜底</div>
+          <div class="to"><b>单平台注入确定可靠</b>，从根上砍掉整层 push/pull 兜底 hack。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">角色护栏靠 prompt 文字约束</div>
+          <div class="to"><b>引擎层强制角色边界</b>：禁 commit、禁递归派发由结构保证，不靠模型自觉。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">jsonl 显式 per-agent 上下文</div>
+          <div class="to"><b>把「上下文路由」做成一等概念</b>：声明式描述哪个 agent 吃哪些文件，平台原生投喂。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4 · workflow-state 状态机 -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>Section 4 · 聚焦特性 · workflow-state 状态机</h2>
+          <p>再挑一个最能体现「每轮治理」的特性细讲：每条用户消息进来时，Trellis 怎么实时算出「你现在在哪个阶段、这一阶段必做什么」，并把它注入这一轮。关键不在「有个状态」，而在状态的单点写入、纯查表派生，以及让必做步骤每轮都被复述。</p>
+        </div>
+      </div>
+
+      <!-- (A) 运作流程 -->
+      <div class="flow-grid">
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">1</span><strong>每条消息触发 hook</strong></div>
+          <p class="desc">每一条用户消息进来都触发 hook（Claude Code 上是 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">UserPromptSubmit</code>，Gemini 上是 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">BeforeAgent</code>），在模型动笔前先夺过控制权。</p>
+          <div class="artifact"><span>触发</span><code>UserPromptSubmit</code><code>BeforeAgent</code></div>
+        </article>
+
+        <article class="journey-card">
+          <div class="step-head"><span class="num">2</span><strong>正则扫 workflow.md</strong></div>
+          <p class="desc">用正则扫 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">.trellis/workflow.md</code> 里的 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">[workflow-state:STATUS]</code> 块，得到各状态的文案。<strong>workflow.md 是唯一数据源，脚本里没有任何硬编码兜底文案。</strong></p>
+          <div class="artifact"><span>读取</span><code>workflow.md</code></div>
+        </article>
+
+        <article class="journey-card ad">
+          <div class="step-head"><span class="num">3</span><strong>拼装并注入这一轮</strong></div>
+          <p class="desc">按 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">task.json.status</code> 选对应块，拼出 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">&lt;workflow-state&gt;</code> 注入本轮——头部写当前任务与状态，主体写该阶段必做步骤。</p>
+          <div class="artifact"><span>产出</span><code>&lt;workflow-state&gt;</code></div>
+        </article>
+
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">4</span><strong>状态单点流转</strong></div>
+          <p class="desc">状态流转 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">no_task → planning → in_progress → completed</code> 由 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">task.py</code> 生命周期单点写入；面包屑只是 status 的纯查表派生。</p>
+          <div class="artifact"><span>真源</span><code>task.py</code><code>task.json</code></div>
+        </article>
+      </div>
+
+      <!-- (B) 聪明设计 -->
+      <p class="callout" style="margin-top:18px;">
+        <b>活样本：</b>你正在看的这份对话，每轮顶部的 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">&lt;workflow-state&gt;</code> 就是它的产出；<code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">in_progress</code> 块每轮复述「派子代理 / commit 纪律 / Active task 协议」，正是全程不跑偏的原因。
+      </p>
+      <div class="data-map">
+        <div class="panel">
+          <span class="pin">1</span>
+          <h3>workflow.md 唯一真源 + fail-loud</h3>
+          <p>脚本零兜底字典；某状态的 tag 缺失就输出可见的「Refer to workflow.md」提示，故意让人看见去修，而不是静默掩盖——错误必须吵闹。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">2</span>
+          <h3>⭐ required ↔ 面包屑 invariant（血换来的）</h3>
+          <p>每个 <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">[required·once]</code> 步骤必须在该阶段面包屑里有一行强制语句，否则 AI 会静默跳过（曾真实跳过 Phase 1.3 jsonl、3.4 commit）；用回归测试断言这个对应关系。核心真理：<b>没被每轮复述的「必做」等于没有。</b></p>
+        </div>
+        <div class="panel">
+          <span class="pin">3</span>
+          <h3>状态单点写入 + 面包屑纯派生</h3>
+          <p>状态存文件（<code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">task.json</code> + <code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">.runtime/sessions</code>），面包屑是查表结果；session 隔离，多窗口互不串。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">4</span>
+          <h3>no_task 内置 A/B/C 路由</h3>
+          <p>连没任务时也每轮判断：直答 / 建任务 / 带暗号 inline；并用显式暗号短语，防 AI 自己发明例外。</p>
+        </div>
+      </div>
+
+      <!-- (C) 对 CSC 的提升 -->
+      <div class="model-head">
+        <div class="h1">Trellis 的外挂做法</div>
+        <div class="h2">CSC 可内化的原生能力</div>
+      </div>
+      <div class="model">
+        <div class="model-row">
+          <div class="from">每轮 hook 注入 status → 面包屑</div>
+          <div class="to"><b>把「每轮状态机注入」做成一等原语</b>，引擎自动维护，免写 hook。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">required 靠约定 + 回归测试守（软）</div>
+          <div class="to"><b>引擎层保证：required 步骤自动注入提醒 / 缺失即拦截</b>（软约束 → 硬保证，最关键的一条）。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">no_task 的 A/B/C 暗号路由</div>
+          <div class="to"><b>做成可配置的 turn-router 原语</b>，每轮路由声明式可配。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">hook 内 14 平台分支（事件名 / Codex notice / dispatch_mode）</div>
+          <div class="to"><b>单平台砍掉整层兼容复杂度</b>，无需为每个平台各写一套分支。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5 -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>Section 5 · 对 CSC 的提升</h2>
           <p>这是本页最重要的部分。Trellis 验证了「AI 编码需要一个治理层」，但它的实现方式有天花板，而那个天花板恰好是 CSC 能突破的。</p>
         </div>
       </div>
@@ -561,11 +737,11 @@
       </div>
     </section>
 
-    <!-- Section 4 -->
+    <!-- Section 6 -->
     <section class="section">
       <div class="section-head">
         <div>
-          <h2>Section 4 · 务实看待（局限）</h2>
+          <h2>Section 6 · 务实看待（局限）</h2>
           <p>客观列出 Trellis 当前的代价与短板，建立可信度。要点在于：这些「软」的地方，恰是 CSC 用 harness 做「硬」的机会。</p>
         </div>
       </div>
