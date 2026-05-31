@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QRCode2WIFI · 小程序 UI 预览</title>
+<style>
+  /* ===========================================================
+     QRCode2WIFI 微信小程序 · 纯视觉 UI 预览
+     - rpx 换算：以 750 设计宽度为基准，手机框宽 375px，1rpx = 0.5px
+     - 所有数值在 .screen 内用 --rpx 变量缩放：calc(N * var(--rpx))
+     - 自包含：无外部 CSS / 字体 / CDN
+     =========================================================== */
+
+  :root {
+    --page-bg: #ece5d6;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #f7f2e7, transparent),
+      var(--page-bg);
+    color: #1d292d;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+
+  /* ---------- 顶部标题区 ---------- */
+  .doc-head {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 48px 24px 8px;
+    text-align: center;
+  }
+  .doc-head h1 {
+    margin: 0 0 10px;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #14201f;
+  }
+  .doc-head .sub {
+    margin: 0 auto;
+    max-width: 720px;
+    color: #66757b;
+    font-size: 15px;
+  }
+  .doc-head .badges {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .doc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #09675a;
+    background: #dff3ee;
+    border: 1px solid #bee8df;
+    border-radius: 999px;
+    padding: 5px 14px;
+  }
+  .doc-badge.amber { color: #865d10; background: #faedd0; border-color: #ead096; }
+  .doc-badge.blue { color: #2c5079; background: #e6eef8; border-color: #c9d8ed; }
+
+  /* ---------- 手机网格 ---------- */
+  .grid {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 24px 24px 80px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 40px 28px;
+    justify-items: center;
+  }
+
+  .device {
+    width: 100%;
+    max-width: 360px;
+  }
+  .device .caption {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0 0 12px 6px;
+    flex-wrap: wrap;
+  }
+  .device .caption .slug {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #158474;
+    text-transform: lowercase;
+    background: #dff3ee;
+    border: 1px solid #bee8df;
+    border-radius: 8px;
+    padding: 2px 8px;
+  }
+  .device .caption .zh {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1d292d;
+  }
+  .device .caption .variant {
+    font-size: 12px;
+    color: #97877a;
+    font-weight: 600;
+  }
+
+  /* ---------- 手机外框 ---------- */
+  .phone {
+    --rpx: 0.5px;          /* 1rpx ≈ 0.5px（750 → 375） */
+    width: 100%;
+    border-radius: 38px;
+    background: #1b1410;
+    padding: 10px;
+    box-shadow:
+      0 30px 60px rgba(40, 30, 15, 0.28),
+      0 4px 12px rgba(40, 30, 15, 0.18),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+  .screen {
+    position: relative;
+    width: 375px;
+    max-width: 100%;
+    height: 720px;
+    margin: 0 auto;
+    border-radius: 30px;
+    overflow: hidden;
+    background: #f4f0e7;        /* page bg */
+  }
+  /* 状态栏 + 刘海 */
+  .statusbar {
+    position: relative;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 22px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1d292d;
+    background: #f4f0e7;
+    z-index: 3;
+  }
+  .statusbar .notch {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 22px;
+    background: #1b1410;
+    border-radius: 0 0 16px 16px;
+  }
+  .statusbar .ico {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    font-size: 11px;
+  }
+  .statusbar .ico b { width: 16px; height: 9px; border: 1.5px solid #1d292d; border-radius: 3px; display: inline-block; }
+
+  .viewport {
+    height: calc(720px - 36px);
+    overflow-y: auto;
+    background: #f4f0e7;
+  }
+  .viewport::-webkit-scrollbar { width: 0; }
+
+  /* ===========================================================
+     以下为 app.wxss + 各页 wxss 的等价翻译（rpx → calc(N*var(--rpx)))
+     =========================================================== */
+
+  .wrap {
+    padding: calc(28 * var(--rpx)) calc(28 * var(--rpx)) calc(56 * var(--rpx));
+  }
+
+  /* ---------- 卡片 ---------- */
+  .card {
+    background: #fffdf8;
+    border: 1px solid #e5dccf;
+    border-radius: calc(28 * var(--rpx));
+    padding: calc(30 * var(--rpx));
+    margin-bottom: calc(26 * var(--rpx));
+    box-shadow: 0 calc(16 * var(--rpx)) calc(42 * var(--rpx)) rgba(43, 34, 20, 0.07);
+  }
+  .card h2 {
+    font-size: calc(32 * var(--rpx));
+    font-weight: 800;
+    margin: 0 0 calc(18 * var(--rpx));
+    color: #1d292d;
+  }
+  .card h3 {
+    font-size: calc(28 * var(--rpx));
+    font-weight: 700;
+    margin: 0 0 calc(12 * var(--rpx));
+    color: #1d292d;
+  }
+
+  /* ---------- 文本 ---------- */
+  .muted {
+    color: #66757b;
+    font-size: calc(26 * var(--rpx));
+  }
+  .lead {
+    color: #66757b;
+    font-size: calc(26 * var(--rpx));
+    display: block;
+    margin-top: calc(6 * var(--rpx));
+  }
+
+  /* ---------- 顶部标记条 ---------- */
+  .page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: calc(24 * var(--rpx));
+  }
+  .mark {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(12 * var(--rpx));
+    color: #158474;
+    font-weight: 800;
+    font-size: calc(24 * var(--rpx));
+    letter-spacing: calc(1 * var(--rpx));
+  }
+  .mark::before {
+    content: "";
+    width: calc(18 * var(--rpx));
+    height: calc(18 * var(--rpx));
+    border-radius: 50%;
+    background: #158474;
+  }
+
+  /* ---------- pill 状态标签 ---------- */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: calc(999 * var(--rpx));
+    padding: calc(8 * var(--rpx)) calc(20 * var(--rpx));
+    font-size: calc(22 * var(--rpx));
+    font-weight: 700;
+    color: #09675a;
+    background: #dff3ee;
+    border: 1px solid #bee8df;
+  }
+  .pill.amber { color: #865d10; background: #faedd0; border-color: #ead096; }
+  .pill.blue { color: #2c5079; background: #e6eef8; border-color: #c9d8ed; }
+  .pill.red { color: #a84d31; background: #f8e5dd; border-color: #eccabc; }
+
+  /* ---------- 行 ---------- */
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: calc(22 * var(--rpx)) 0;
+    border-bottom: 1px solid #f0eadf;
+    font-size: calc(28 * var(--rpx));
+  }
+  .row:last-child { border-bottom: 0; }
+  .row .v { font-weight: 600; color: #1d292d; }
+
+  /* ---------- 表单 ---------- */
+  .field { margin-bottom: calc(22 * var(--rpx)); }
+  .field:last-child { margin-bottom: 0; }
+  .field .label {
+    font-size: calc(24 * var(--rpx));
+    color: #66757b;
+    margin-bottom: calc(10 * var(--rpx));
+  }
+  .input {
+    display: block;
+    width: 100%;
+    border: 1px solid #ddd3c4;
+    border-radius: calc(18 * var(--rpx));
+    padding: calc(22 * var(--rpx)) calc(24 * var(--rpx));
+    background: #fbf9f4;
+    font-size: calc(28 * var(--rpx));
+    color: #354349;
+  }
+  .input.placeholder { color: #aaa195; }
+
+  /* ---------- 按钮 ---------- */
+  .btn {
+    background: linear-gradient(90deg, #158474, #38a895);
+    color: #fff;
+    border-radius: calc(999 * var(--rpx));
+    text-align: center;
+    padding: calc(26 * var(--rpx));
+    font-size: calc(30 * var(--rpx));
+    font-weight: 800;
+    margin-top: calc(22 * var(--rpx));
+    box-shadow: 0 calc(12 * var(--rpx)) calc(26 * var(--rpx)) rgba(21, 132, 116, 0.2);
+  }
+  .btn.amber {
+    background: linear-gradient(90deg, #bf8425, #d8a53e);
+    box-shadow: 0 calc(12 * var(--rpx)) calc(26 * var(--rpx)) rgba(191, 132, 37, 0.2);
+  }
+  .btn.blue {
+    background: linear-gradient(90deg, #315d88, #5f81ab);
+    box-shadow: 0 calc(12 * var(--rpx)) calc(26 * var(--rpx)) rgba(49, 93, 136, 0.2);
+  }
+  .btn.ghost {
+    background: #26363b;
+    box-shadow: 0 calc(12 * var(--rpx)) calc(26 * var(--rpx)) rgba(38, 54, 59, 0.16);
+  }
+  .btn.outline {
+    background: #fff;
+    color: #158474;
+    border: 1px solid #bee8df;
+    box-shadow: none;
+  }
+
+  /* ---------- 店铺行 ---------- */
+  .shop-row {
+    display: flex;
+    align-items: center;
+    gap: calc(20 * var(--rpx));
+    padding: calc(22 * var(--rpx));
+    border-radius: calc(20 * var(--rpx));
+    border: 1px solid #e4dacb;
+    background: #fbf8f1;
+    margin-top: calc(16 * var(--rpx));
+  }
+  .shop-row:first-child { margin-top: 0; }
+  .avatar {
+    width: calc(72 * var(--rpx));
+    height: calc(72 * var(--rpx));
+    border-radius: calc(18 * var(--rpx));
+    background: linear-gradient(135deg, #158474, #8bd0c1);
+    flex: 0 0 auto;
+  }
+  .avatar.blue { background: linear-gradient(135deg, #315d88, #91a9c7); }
+  .shop-row .info { flex: 1; min-width: 0; }
+  .shop-row .info .name { font-weight: 700; font-size: calc(30 * var(--rpx)); }
+  .shop-row .arrow { color: #66757b; font-size: calc(26 * var(--rpx)); }
+
+  /* ---------- home ---------- */
+  .hero { background: linear-gradient(160deg, #fffefb, #f4eee0); }
+  .empty { text-align: center; padding: calc(56 * var(--rpx)) calc(30 * var(--rpx)); }
+  .empty-icon { font-size: calc(72 * var(--rpx)); margin-bottom: calc(18 * var(--rpx)); }
+
+  /* ---------- create ---------- */
+  .note {
+    display: block;
+    text-align: center;
+    margin-top: calc(20 * var(--rpx));
+    font-size: calc(24 * var(--rpx));
+  }
+
+  /* ---------- qrcode ---------- */
+  .qr-card { text-align: center; }
+  .qr-frame {
+    width: calc(420 * var(--rpx));
+    height: calc(420 * var(--rpx));
+    margin: calc(28 * var(--rpx)) auto calc(20 * var(--rpx));
+    padding: calc(24 * var(--rpx));
+    background: #fff;
+    border: 1px solid #d9d0c2;
+    border-radius: calc(28 * var(--rpx));
+    box-shadow: 0 calc(12 * var(--rpx)) calc(30 * var(--rpx)) rgba(43, 34, 20, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qr-img { width: 100%; height: 100%; }
+  .qr-path {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(6 * var(--rpx));
+    margin-bottom: calc(6 * var(--rpx));
+  }
+  .path-v {
+    font-size: calc(26 * var(--rpx));
+    color: #2c5079;
+    font-weight: 600;
+    word-break: break-all;
+  }
+  .tip { display: block; margin-top: calc(18 * var(--rpx)); font-size: calc(24 * var(--rpx)); }
+
+  /* ---------- connect ---------- */
+  .error-card { border-color: #eccabc; background: #f8e5dd; }
+  .store-card { text-align: center; background: linear-gradient(160deg, #fffefb, #f6f0e3); }
+  .store-logo {
+    width: calc(120 * var(--rpx));
+    height: calc(120 * var(--rpx));
+    margin: 0 auto calc(18 * var(--rpx));
+    border-radius: calc(30 * var(--rpx));
+    background: linear-gradient(135deg, #158474, #8bd0c1);
+    color: #fff;
+    font-size: calc(28 * var(--rpx));
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0 calc(12 * var(--rpx));
+    box-shadow: 0 calc(12 * var(--rpx)) calc(26 * var(--rpx)) rgba(21, 132, 116, 0.22);
+  }
+  .store-name { font-size: calc(38 * var(--rpx)); }
+  .ssid-box {
+    margin-top: calc(22 * var(--rpx));
+    padding: calc(22 * var(--rpx)) calc(26 * var(--rpx));
+    border-radius: calc(20 * var(--rpx));
+    border: 1px solid #ddd3c4;
+    background: #fbf9f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ssid-v { font-weight: 700; color: #1d292d; font-size: calc(30 * var(--rpx)); }
+  .btn-hero { padding: calc(32 * var(--rpx)); font-size: calc(34 * var(--rpx)); }
+
+  /* ---------- ad ---------- */
+  .adbox {
+    text-align: center;
+    border: 1px solid #e7d2a6;
+    background: linear-gradient(160deg, #fff6dc, #fffdf7);
+    padding: calc(48 * var(--rpx)) calc(30 * var(--rpx));
+  }
+  .ad-title {
+    display: block;
+    font-size: calc(32 * var(--rpx));
+    font-weight: 800;
+    color: #765412;
+    margin-bottom: calc(8 * var(--rpx));
+  }
+  .count {
+    font-size: calc(120 * var(--rpx));
+    line-height: 1.1;
+    font-weight: 800;
+    color: #bf8425;
+    margin: calc(12 * var(--rpx)) 0;
+  }
+  .progress {
+    height: calc(14 * var(--rpx));
+    border-radius: calc(999 * var(--rpx));
+    background: #ead4a1;
+    overflow: hidden;
+    margin: calc(24 * var(--rpx)) 0 calc(12 * var(--rpx));
+  }
+  .progress .bar {
+    height: 100%;
+    background: linear-gradient(90deg, #bf8425, #e2b657);
+    border-radius: calc(999 * var(--rpx));
+  }
+  .hint { display: block; margin-top: calc(8 * var(--rpx)); font-size: calc(24 * var(--rpx)); }
+  .ad-fail { font-size: calc(80 * var(--rpx)); margin-bottom: calc(12 * var(--rpx)); }
+
+  /* ---------- wifi ---------- */
+  .status-card { text-align: center; }
+  .wifi-icon { font-size: calc(80 * var(--rpx)); margin-bottom: calc(8 * var(--rpx)); }
+  .ssid-title { font-size: calc(36 * var(--rpx)); margin-bottom: calc(16 * var(--rpx)); }
+  .status-card .row { text-align: left; }
+  .v.ok { color: #158474; }
+  .success-card {
+    text-align: center;
+    border-color: #bee8df;
+    background: linear-gradient(160deg, #eef9f5, #fffdf8);
+  }
+  .success-text {
+    display: block;
+    color: #09675a;
+    font-weight: 800;
+    font-size: calc(32 * var(--rpx));
+    margin-bottom: calc(8 * var(--rpx));
+  }
+  .fallback {
+    border-color: #ead096;
+    background: linear-gradient(160deg, #fff8e8, #fffdf8);
+  }
+
+  /* ---------- stats ---------- */
+  .tiles {
+    display: flex;
+    gap: calc(18 * var(--rpx));
+    margin-bottom: calc(26 * var(--rpx));
+  }
+  .tile {
+    flex: 1;
+    border-radius: calc(24 * var(--rpx));
+    padding: calc(30 * var(--rpx)) calc(18 * var(--rpx));
+    text-align: center;
+    border: 1px solid #e5dccf;
+    background: #fffdf8;
+    box-shadow: 0 calc(12 * var(--rpx)) calc(30 * var(--rpx)) rgba(43, 34, 20, 0.06);
+  }
+  .tile.teal { background: linear-gradient(160deg, #eef9f5, #fffdf8); border-color: #bee8df; }
+  .tile.amber { background: linear-gradient(160deg, #fff6e3, #fffdf8); border-color: #ead096; }
+  .tile.blue { background: linear-gradient(160deg, #eaf1fa, #fffdf8); border-color: #c9d8ed; }
+  .tile-num {
+    display: block;
+    font-size: calc(48 * var(--rpx));
+    font-weight: 800;
+    color: #1d292d;
+    line-height: 1.1;
+  }
+  .tile-label {
+    display: block;
+    margin-top: calc(8 * var(--rpx));
+    font-size: calc(24 * var(--rpx));
+    color: #66757b;
+  }
+  .v.fail { color: #a84d31; }
+  .note-card { background: #f9f5ec; }
+
+  .doc-foot {
+    text-align: center;
+    color: #8a7c6d;
+    font-size: 13px;
+    padding: 0 24px 60px;
+  }
+</style>
+</head>
+<body>
+
+  <header class="doc-head">
+    <h1>QRCode2WIFI · 微信小程序 UI 预览</h1>
+    <p class="sub">本页为纯视觉预览，展示小程序全部 8 个页面的界面外观。所有数据均为示意内容，无任何真实数据 / 后端逻辑 / 交互。手机框宽 375px，rpx 按 750 设计基准换算（1rpx ≈ 0.5px）。</p>
+    <div class="badges">
+      <span class="doc-badge">8 个页面</span>
+      <span class="doc-badge blue">数据为示意</span>
+      <span class="doc-badge amber">浏览器直接打开</span>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- ============ home · 我的店铺 ============ -->
+    <section class="device">
+      <div class="caption"><span class="slug">home</span><span class="zh">我的店铺</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">我的店铺</div>
+                <div class="pill blue">管理</div>
+              </div>
+
+              <div class="card hero">
+                <h2>欢迎回来</h2>
+                <span class="lead">你创建的店铺会出现在这里，创建后即成为该店铺 owner。</span>
+                <div class="btn blue">+ 创建店铺</div>
+              </div>
+
+              <div class="card">
+                <h2>已有店铺</h2>
+                <div class="shop-row">
+                  <div class="avatar"></div>
+                  <div class="info">
+                    <div class="name">XX咖啡</div>
+                    <span class="muted">WiFi · XX_Coffee_Free</span>
+                  </div>
+                  <span class="arrow">进入 ›</span>
+                </div>
+                <div class="shop-row">
+                  <div class="avatar blue"></div>
+                  <div class="info">
+                    <div class="name">一号棋牌室</div>
+                    <span class="muted">WiFi · No1_Chess_5G</span>
+                  </div>
+                  <span class="arrow">进入 ›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ create · 创建店铺 ============ -->
+    <section class="device">
+      <div class="caption"><span class="slug">create</span><span class="zh">创建店铺</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">创建店铺</div>
+                <div class="pill blue">填写 WiFi</div>
+              </div>
+
+              <div class="card">
+                <h2>基础信息</h2>
+                <div class="field">
+                  <div class="label">店铺名称</div>
+                  <div class="input placeholder">如 XX咖啡</div>
+                </div>
+                <div class="field">
+                  <div class="label">WiFi 名称</div>
+                  <div class="input placeholder">如 XX_Coffee_Free</div>
+                </div>
+                <div class="field">
+                  <div class="label">WiFi 密码</div>
+                  <div class="input placeholder">WiFi 密码</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h2>可选展示</h2>
+                <div class="field">
+                  <div class="label">点评 / 团购链接</div>
+                  <div class="input placeholder">可不填</div>
+                </div>
+                <div class="field">
+                  <div class="label">联系电话</div>
+                  <div class="input placeholder">可不填</div>
+                </div>
+              </div>
+
+              <div class="btn blue">保存并生成二维码</div>
+              <span class="muted note">二维码只携带 sid，不会写入明文 WiFi 密码。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ detail · 店铺管理 ============ -->
+    <section class="device">
+      <div class="caption"><span class="slug">detail</span><span class="zh">店铺管理</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">店铺管理</div>
+                <div class="pill blue">正常展示</div>
+              </div>
+
+              <div class="card">
+                <h2>XX咖啡</h2>
+                <div>
+                  <div class="row"><span class="muted">WiFi 名称</span><span class="v">XX_Coffee_Free</span></div>
+                  <div class="row"><span class="muted">WiFi 密码</span><span class="v">coffee2024</span></div>
+                  <div class="row"><span class="muted">展示状态</span><span class="v">正常展示</span></div>
+                  <div class="btn blue">编辑 WiFi 信息</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h2>运营</h2>
+                <div class="btn">生成 / 查看二维码</div>
+                <div class="btn outline">查看数据</div>
+                <div class="btn outline">上传店铺 Logo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ qrcode · 门店二维码 ============ -->
+    <section class="device">
+      <div class="caption"><span class="slug">qrcode</span><span class="zh">门店二维码</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">门店二维码</div>
+                <div class="pill blue">已生成</div>
+              </div>
+
+              <div class="card qr-card">
+                <h2>XX咖啡 专属二维码</h2>
+                <div class="qr-frame">
+                  <!-- 占位二维码（inline SVG，仅作示意图案） -->
+                  <svg class="qr-img" viewBox="0 0 33 33" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="33" height="33" fill="#ffffff"/>
+                    <g fill="#14201f">
+                      <!-- 定位角 左上 -->
+                      <rect x="1" y="1" width="7" height="7"/>
+                      <rect x="2" y="2" width="5" height="5" fill="#fff"/>
+                      <rect x="3" y="3" width="3" height="3"/>
+                      <!-- 定位角 右上 -->
+                      <rect x="25" y="1" width="7" height="7"/>
+                      <rect x="26" y="2" width="5" height="5" fill="#fff"/>
+                      <rect x="27" y="3" width="3" height="3"/>
+                      <!-- 定位角 左下 -->
+                      <rect x="1" y="25" width="7" height="7"/>
+                      <rect x="2" y="26" width="5" height="5" fill="#fff"/>
+                      <rect x="3" y="27" width="3" height="3"/>
+                      <!-- 随机数据点（示意） -->
+                      <rect x="10" y="1" width="1" height="1"/><rect x="12" y="1" width="1" height="1"/><rect x="15" y="1" width="1" height="1"/><rect x="18" y="1" width="1" height="1"/><rect x="21" y="2" width="1" height="1"/><rect x="23" y="1" width="1" height="1"/>
+                      <rect x="11" y="3" width="1" height="1"/><rect x="14" y="3" width="1" height="1"/><rect x="17" y="3" width="1" height="1"/><rect x="20" y="3" width="1" height="1"/><rect x="22" y="4" width="1" height="1"/>
+                      <rect x="10" y="5" width="1" height="1"/><rect x="13" y="5" width="1" height="1"/><rect x="16" y="5" width="1" height="1"/><rect x="19" y="6" width="1" height="1"/><rect x="21" y="5" width="1" height="1"/><rect x="23" y="6" width="1" height="1"/>
+                      <rect x="1" y="10" width="1" height="1"/><rect x="3" y="11" width="1" height="1"/><rect x="5" y="10" width="1" height="1"/><rect x="7" y="12" width="1" height="1"/>
+                      <rect x="10" y="9" width="1" height="1"/><rect x="12" y="10" width="1" height="1"/><rect x="14" y="9" width="1" height="1"/><rect x="16" y="11" width="1" height="1"/><rect x="18" y="9" width="1" height="1"/><rect x="20" y="10" width="1" height="1"/><rect x="22" y="9" width="1" height="1"/><rect x="24" y="11" width="1" height="1"/><rect x="26" y="10" width="1" height="1"/><rect x="28" y="9" width="1" height="1"/><rect x="30" y="11" width="1" height="1"/><rect x="31" y="9" width="1" height="1"/>
+                      <rect x="2" y="13" width="1" height="1"/><rect x="4" y="14" width="1" height="1"/><rect x="6" y="13" width="1" height="1"/>
+                      <rect x="11" y="13" width="1" height="1"/><rect x="13" y="14" width="1" height="1"/><rect x="15" y="13" width="1" height="1"/><rect x="17" y="15" width="1" height="1"/><rect x="19" y="13" width="1" height="1"/><rect x="21" y="14" width="1" height="1"/><rect x="23" y="13" width="1" height="1"/><rect x="25" y="14" width="1" height="1"/><rect x="27" y="13" width="1" height="1"/><rect x="29" y="15" width="1" height="1"/><rect x="31" y="13" width="1" height="1"/>
+                      <rect x="1" y="16" width="1" height="1"/><rect x="3" y="17" width="1" height="1"/><rect x="5" y="16" width="1" height="1"/><rect x="7" y="18" width="1" height="1"/>
+                      <rect x="10" y="17" width="1" height="1"/><rect x="12" y="16" width="1" height="1"/><rect x="14" y="18" width="1" height="1"/><rect x="16" y="17" width="1" height="1"/><rect x="18" y="16" width="1" height="1"/><rect x="20" y="18" width="1" height="1"/><rect x="22" y="17" width="1" height="1"/><rect x="24" y="16" width="1" height="1"/><rect x="26" y="18" width="1" height="1"/><rect x="28" y="17" width="1" height="1"/><rect x="30" y="16" width="1" height="1"/>
+                      <rect x="2" y="20" width="1" height="1"/><rect x="4" y="21" width="1" height="1"/><rect x="6" y="20" width="1" height="1"/>
+                      <rect x="11" y="20" width="1" height="1"/><rect x="13" y="21" width="1" height="1"/><rect x="15" y="20" width="1" height="1"/><rect x="17" y="22" width="1" height="1"/><rect x="19" y="20" width="1" height="1"/><rect x="21" y="21" width="1" height="1"/><rect x="23" y="20" width="1" height="1"/><rect x="25" y="22" width="1" height="1"/><rect x="27" y="20" width="1" height="1"/><rect x="29" y="21" width="1" height="1"/><rect x="31" y="20" width="1" height="1"/>
+                      <rect x="10" y="24" width="1" height="1"/><rect x="12" y="25" width="1" height="1"/><rect x="14" y="24" width="1" height="1"/><rect x="16" y="26" width="1" height="1"/><rect x="18" y="24" width="1" height="1"/><rect x="20" y="25" width="1" height="1"/><rect x="22" y="24" width="1" height="1"/><rect x="24" y="26" width="1" height="1"/><rect x="26" y="24" width="1" height="1"/><rect x="28" y="25" width="1" height="1"/><rect x="30" y="24" width="1" height="1"/>
+                      <rect x="10" y="27" width="1" height="1"/><rect x="13" y="28" width="1" height="1"/><rect x="16" y="27" width="1" height="1"/><rect x="19" y="29" width="1" height="1"/><rect x="22" y="27" width="1" height="1"/><rect x="25" y="28" width="1" height="1"/><rect x="28" y="27" width="1" height="1"/><rect x="31" y="29" width="1" height="1"/>
+                      <rect x="11" y="30" width="1" height="1"/><rect x="14" y="31" width="1" height="1"/><rect x="17" y="30" width="1" height="1"/><rect x="20" y="31" width="1" height="1"/><rect x="23" y="30" width="1" height="1"/><rect x="26" y="31" width="1" height="1"/><rect x="29" y="30" width="1" height="1"/>
+                    </g>
+                  </svg>
+                </div>
+                <div class="qr-path">
+                  <span class="muted">扫码路径</span>
+                  <span class="path-v">/pages/connect/index?sid=Ab8K29</span>
+                </div>
+                <div class="btn ghost">复制店铺链接</div>
+                <span class="muted tip">二维码只携带 sid，不含明文密码，顾客扫码后只进入本店连接页。</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ connect · 顾客门店页 ============ -->
+    <section class="device">
+      <div class="caption"><span class="slug">connect</span><span class="zh">顾客门店页</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">当前门店</div>
+                <div class="pill">免费 WiFi</div>
+              </div>
+
+              <div class="card store-card">
+                <div class="store-logo">XX咖啡</div>
+                <h2 class="store-name">XX咖啡</h2>
+                <span class="lead">你正在连接本店免费 WiFi，看完广告即可一键连接。</span>
+                <div class="ssid-box">
+                  <span class="muted">WiFi 名称</span>
+                  <span class="ssid-v">XX_Coffee_Free</span>
+                </div>
+              </div>
+
+              <div class="btn amber btn-hero">看广告连 WiFi</div>
+
+              <div class="card">
+                <h2>店铺推荐</h2>
+                <div class="row"><span class="muted">大众点评</span><span class="v">复制打开 ›</span></div>
+                <div class="row"><span class="muted">美团团购</span><span class="v">复制打开 ›</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ad · 激励视频（播放中） ============ -->
+    <section class="device">
+      <div class="caption"><span class="slug">ad</span><span class="zh">激励视频</span><span class="variant">· 播放中</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">激励视频</div>
+                <div class="pill amber">播放中</div>
+              </div>
+
+              <div class="card adbox">
+                <span class="ad-title">广告播放中</span>
+                <div class="count">3</div>
+                <span class="muted">剩余 3 秒后可连接 WiFi</span>
+                <div class="progress"><div class="bar" style="width:40%"></div></div>
+                <span class="muted hint">跳过广告将无法连接</span>
+              </div>
+
+              <div class="card">
+                <h2>观看要求</h2>
+                <div class="row"><span class="muted">完成状态</span><span class="v">观看中</span></div>
+                <div class="row"><span class="muted">跳过广告</span><span class="v">不可连接</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ wifi · 连接 WiFi（已解锁待连接） ============ -->
+    <section class="device">
+      <div class="caption"><span class="slug">wifi</span><span class="zh">连接 WiFi</span><span class="variant">· 已解锁</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">连接 WiFi</div>
+                <div class="pill amber">可连接</div>
+              </div>
+
+              <div class="card status-card">
+                <div class="wifi-icon">📶</div>
+                <h2 class="ssid-title">XX_Coffee_Free</h2>
+                <div class="row"><span class="muted">广告</span><span class="v ok">已完成</span></div>
+                <div class="row"><span class="muted">连接权限</span><span class="v ok">已解锁</span></div>
+              </div>
+
+              <div class="btn btn-hero">一键连接 WiFi</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ stats · 店铺数据 ============ -->
+    <section class="device">
+      <div class="caption"><span class="slug">stats</span><span class="zh">店铺数据</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">店铺数据</div>
+                <div class="pill blue">累计</div>
+              </div>
+
+              <div class="tiles">
+                <div class="tile teal">
+                  <span class="tile-num">328</span>
+                  <span class="tile-label">扫码人次</span>
+                </div>
+                <div class="tile amber">
+                  <span class="tile-num">256</span>
+                  <span class="tile-label">广告完成</span>
+                </div>
+                <div class="tile blue">
+                  <span class="tile-num">241</span>
+                  <span class="tile-label">连接点击</span>
+                </div>
+              </div>
+
+              <div class="card">
+                <h2>连接明细</h2>
+                <div class="row"><span class="muted">连接成功</span><span class="v ok">218</span></div>
+                <div class="row"><span class="muted">连接失败</span><span class="v fail">23</span></div>
+              </div>
+
+              <div class="card note-card">
+                <span class="muted">第一版只展示基础数据，目标是验证使用量。</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ 状态变体（附加小图） ============ -->
+  <header class="doc-head" style="padding-top:8px;">
+    <h1 style="font-size:20px;">状态变体</h1>
+    <p class="sub">同一页面的其它界面状态，作为补充展示。</p>
+  </header>
+
+  <main class="grid">
+
+    <!-- ad · 未完成态 -->
+    <section class="device">
+      <div class="caption"><span class="slug">ad</span><span class="zh">激励视频</span><span class="variant">· 未完成态</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">激励视频</div>
+                <div class="pill amber">未完成</div>
+              </div>
+
+              <div class="card adbox">
+                <div class="ad-fail">⚠️</div>
+                <span class="ad-title">广告未完成</span>
+                <span class="muted">未看完广告，暂时无法连接 WiFi</span>
+                <div class="btn ghost">返回重试</div>
+              </div>
+
+              <div class="card">
+                <h2>观看要求</h2>
+                <div class="row"><span class="muted">完成状态</span><span class="v">未完成</span></div>
+                <div class="row"><span class="muted">跳过广告</span><span class="v">不可连接</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- wifi · 连接成功态 -->
+    <section class="device">
+      <div class="caption"><span class="slug">wifi</span><span class="zh">连接 WiFi</span><span class="variant">· 连接成功</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">连接 WiFi</div>
+                <div class="pill">已连接</div>
+              </div>
+
+              <div class="card status-card">
+                <div class="wifi-icon">✓</div>
+                <h2 class="ssid-title">XX_Coffee_Free</h2>
+                <div class="row"><span class="muted">广告</span><span class="v ok">已完成</span></div>
+                <div class="row"><span class="muted">连接权限</span><span class="v ok">已解锁</span></div>
+              </div>
+
+              <div class="card success-card">
+                <span class="success-text">✓ 已连接 XX_Coffee_Free</span>
+                <span class="muted">现在可以正常上网啦。</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- wifi · 失败兜底态 -->
+    <section class="device">
+      <div class="caption"><span class="slug">wifi</span><span class="zh">连接 WiFi</span><span class="variant">· 失败兜底</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="page-head">
+                <div class="mark">连接 WiFi</div>
+                <div class="pill red">需兜底</div>
+              </div>
+
+              <div class="card status-card">
+                <div class="wifi-icon">📶</div>
+                <h2 class="ssid-title">XX_Coffee_Free</h2>
+                <div class="row"><span class="muted">广告</span><span class="v ok">已完成</span></div>
+                <div class="row"><span class="muted">连接权限</span><span class="v ok">已解锁</span></div>
+              </div>
+
+              <div class="card fallback">
+                <h2>连接失败兜底</h2>
+                <span class="muted">自动连接没成功？复制密码手动连接即可。</span>
+                <div class="row">
+                  <span class="muted">WiFi 密码</span>
+                  <span class="v">coffee2024</span>
+                </div>
+                <div class="btn ghost">复制密码手动连接</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- connect · 店铺已下架态 -->
+    <section class="device">
+      <div class="caption"><span class="slug">connect</span><span class="zh">顾客门店页</span><span class="variant">· 店铺已下架</span></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><div class="notch"></div><span>9:41</span><span class="ico">5G <b></b></span></div>
+          <div class="viewport">
+            <div class="wrap">
+              <div class="card error-card">
+                <h2>无法连接</h2>
+                <span class="muted">该店铺已下架，暂时无法连接 WiFi。</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="doc-foot">
+    QRCode2WIFI · 静态 UI 预览 · 配色与样式取自 app.wxss 及各页 wxss · 数据为示意
+  </footer>
+
+</body>
+</html>
