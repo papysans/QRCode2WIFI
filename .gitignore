@@ -13,6 +13,7 @@ coverage/
 apps/server/prisma/*.db
 # WeChat miniprogram build
 apps/miniprogram/node_modules/
+apps/miniprogram/project.private.config.json
 # uploads (local logo storage)
 apps/server/uploads/
 mitm_mcp_traffic.db
