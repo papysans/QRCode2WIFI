@@ -1,0 +1,18 @@
+# AI harness 配置（不进公开仓库；.trellis/ 保留）
+.claude/
+
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.local
+.DS_Store
+coverage/
+# Prisma
+apps/server/prisma/*.db
+# WeChat miniprogram build
+apps/miniprogram/node_modules/
+# uploads (local logo storage)
+apps/server/uploads/
+mitm_mcp_traffic.db

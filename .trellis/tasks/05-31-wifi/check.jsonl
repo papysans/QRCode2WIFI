@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "后端代码标准与禁用模式，检查阶段比对"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "连接失败/广告异常/无效 sid 的错误处理需符合约定"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "后台前端代码质量与类型安全检查"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "校验三端事件字段一致性与漏斗数据正确性"}

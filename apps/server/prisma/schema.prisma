@@ -1,0 +1,89 @@
+// Prisma schema —— WiFi 扫码广告平台
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 微信用户（创建店铺后即 owner）
+model User {
+  openid    String   @id
+  createdAt DateTime @default(now())
+  shops     Shop[]
+}
+
+enum ShopStatus {
+  active
+  inactive
+}
+
+model Shop {
+  id           String     @id @default(cuid())
+  sid          String     @unique
+  ownerOpenid  String
+  owner        User       @relation(fields: [ownerOpenid], references: [openid])
+  name         String
+  wifiSsid     String
+  // AES 加密后的密码密文，仅广告解锁后经 unlock 接口解密下发
+  wifiPassword String
+  logoUrl      String?
+  reviewLink   String?
+  groupBuyLink String?
+  phone        String?
+  status       ShopStatus @default(active)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  events       Event[]
+  dailyStats   DailyShopStat[]
+
+  @@index([ownerOpenid])
+}
+
+// 埋点事件大表
+model Event {
+  id          String   @id @default(cuid())
+  type        String
+  shopId      String
+  shop        Shop     @relation(fields: [shopId], references: [id])
+  actorOpenid String?
+  visitorId   String
+  sessionId   String
+  meta        Json?
+  createdAt   DateTime @default(now())
+
+  @@index([shopId, type, createdAt])
+  @@index([createdAt])
+}
+
+// 按店按天汇总，供后台快速查询
+model DailyShopStat {
+  shopId         String
+  shop           Shop     @relation(fields: [shopId], references: [id])
+  date           String // YYYY-MM-DD
+  scans          Int      @default(0)
+  adCompletes    Int      @default(0)
+  connectClicks  Int      @default(0)
+  connectSuccess Int      @default(0)
+  connectFail    Int      @default(0)
+  updatedAt      DateTime @updatedAt
+
+  @@id([shopId, date])
+  @@index([date])
+}
+
+// 可配置项（eCPM 单价等）
+model Setting {
+  key   String @id
+  value String
+}
+
+// 运营后台账号（与小程序 openid 隔离）
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}

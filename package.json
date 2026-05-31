@@ -1,0 +1,20 @@
+{
+  "name": "qrcode2wifi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WiFi 扫码广告小程序 + 运营监控后台 (monorepo)",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev:server": "pnpm --filter @q2w/server start:dev",
+    "dev:admin": "pnpm --filter @q2w/admin dev",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "db:migrate": "pnpm --filter @q2w/server prisma:migrate",
+    "db:generate": "pnpm --filter @q2w/server prisma:generate"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

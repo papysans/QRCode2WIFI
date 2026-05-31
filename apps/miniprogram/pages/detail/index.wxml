@@ -1,0 +1,28 @@
+<view class="wrap" wx:if="{{shop}}">
+  <view class="card">
+    <h2>{{shop.name}}</h2>
+    <view wx:if="{{!editing}}">
+      <view class="row"><text class="muted">WiFi</text><text>{{shop.wifiSsid}}</text></view>
+      <view class="row"><text class="muted">密码</text><text>{{shop.wifiPassword}}</text></view>
+      <view class="row"><text class="muted">状态</text><text>{{shop.status === 'active' ? '正常展示' : '已下架'}}</text></view>
+      <view class="btn" bindtap="toggleEdit">编辑 WiFi 信息</view>
+    </view>
+    <view wx:else>
+      <view class="field"><view class="label">店铺名称</view>
+        <input class="input" data-field="name" value="{{form.name}}" bindinput="onInput" /></view>
+      <view class="field"><view class="label">WiFi 名称</view>
+        <input class="input" data-field="wifiSsid" value="{{form.wifiSsid}}" bindinput="onInput" /></view>
+      <view class="field"><view class="label">WiFi 密码</view>
+        <input class="input" data-field="wifiPassword" value="{{form.wifiPassword}}" bindinput="onInput" /></view>
+      <view class="btn" bindtap="saveEdit">保存</view>
+      <view class="btn ghost" bindtap="toggleEdit">取消</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <h2>运营</h2>
+    <view class="btn" bindtap="goQrcode">生成 / 查看二维码</view>
+    <view class="btn ghost" bindtap="goStats">查看数据</view>
+    <view class="btn ghost" bindtap="chooseLogo">上传店铺 Logo</view>
+  </view>
+</view>

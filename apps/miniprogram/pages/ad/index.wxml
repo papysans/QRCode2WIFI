@@ -1,0 +1,14 @@
+<view class="wrap">
+  <view class="card" style="text-align:center;min-height:300rpx">
+    <h2>广告播放中</h2>
+    <view wx:if="{{playing}}">
+      <text class="muted">剩余 {{seconds}} 秒后可连接 WiFi</text>
+      <view style="margin-top:24rpx;color:#bf8425;font-size:80rpx;font-weight:800">{{seconds}}</view>
+      <text class="muted" style="display:block;margin-top:24rpx">跳过广告将无法连接</text>
+    </view>
+    <view wx:else>
+      <text class="muted">广告未完成，无法连接 WiFi</text>
+      <view class="btn ghost" bindtap="back">返回重试</view>
+    </view>
+  </view>
+</view>

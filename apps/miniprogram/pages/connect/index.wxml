@@ -1,0 +1,25 @@
+<view class="wrap">
+  <view class="card" wx:if="{{error}}">
+    <h2>无法连接</h2>
+    <text class="muted">{{error}}</text>
+  </view>
+
+  <block wx:if="{{shop}}">
+    <view class="card">
+      <h2>{{shop.name}}</h2>
+      <text class="muted">你正在连接本店免费 WiFi。</text>
+      <view class="row"><text class="muted">WiFi 名称</text><text>{{shop.wifiSsid}}</text></view>
+    </view>
+    <view class="btn amber" bindtap="watchAd">看广告后连接 WiFi</view>
+
+    <view class="card" wx:if="{{shop.reviewLink || shop.groupBuyLink}}">
+      <h2>店铺推荐</h2>
+      <view class="row" wx:if="{{shop.reviewLink}}" data-url="{{shop.reviewLink}}" bindtap="openLink">
+        <text class="muted">大众点评</text><text>复制打开 ›</text>
+      </view>
+      <view class="row" wx:if="{{shop.groupBuyLink}}" data-url="{{shop.groupBuyLink}}" bindtap="openLink">
+        <text class="muted">美团团购</text><text>复制打开 ›</text>
+      </view>
+    </view>
+  </block>
+</view>

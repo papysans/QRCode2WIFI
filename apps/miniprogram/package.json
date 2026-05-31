@@ -1,0 +1,11 @@
+{
+  "name": "@q2w/miniprogram",
+  "version": "0.1.0",
+  "private": true,
+  "description": "微信原生小程序，用微信开发者工具打开本目录",
+  "scripts": {
+    "test": "echo \"miniprogram: 用微信开发者工具调试\" && exit 0",
+    "lint": "echo \"lint: miniprogram\" && exit 0",
+    "typecheck": "echo \"miniprogram: 原生 JS，无 tsc\" && exit 0"
+  }
+}

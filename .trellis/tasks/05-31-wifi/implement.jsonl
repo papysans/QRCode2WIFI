@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "NestJS 后端模块/目录组织约定，apps/server 骨架需遵循"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "Prisma schema、迁移、Event 大表与 DailyShopStat 汇总表的 DB 模式约定"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "apps/admin (React+AntD Pro) 目录与组件组织约定"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "packages/shared 类型一处定义三端复用，避免重复"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "事件从小程序上报→后端入库→后台展示，跨层字段必须对齐"}

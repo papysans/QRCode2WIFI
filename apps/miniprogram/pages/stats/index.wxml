@@ -1,0 +1,13 @@
+<view class="wrap" wx:if="{{stat}}">
+  <view class="card">
+    <h2>累计数据</h2>
+    <view class="row"><text class="muted">扫码人次</text><text>{{stat.scans}}</text></view>
+    <view class="row"><text class="muted">广告完成</text><text>{{stat.adCompletes}}</text></view>
+    <view class="row"><text class="muted">连接点击</text><text>{{stat.connectClicks}}</text></view>
+    <view class="row"><text class="muted">连接成功</text><text>{{stat.connectSuccess}}</text></view>
+    <view class="row"><text class="muted">连接失败</text><text>{{stat.connectFail}}</text></view>
+  </view>
+  <view class="card">
+    <text class="muted">第一版只展示基础数据，目标是验证使用量。</text>
+  </view>
+</view>

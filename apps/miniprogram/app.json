@@ -1,0 +1,20 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/create/index",
+    "pages/detail/index",
+    "pages/qrcode/index",
+    "pages/connect/index",
+    "pages/ad/index",
+    "pages/wifi/index",
+    "pages/stats/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#158474",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "WiFi 助手",
+    "backgroundColor": "#f4f0e7"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

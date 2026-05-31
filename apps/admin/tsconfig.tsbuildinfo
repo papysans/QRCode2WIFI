@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/components/exportbutton.tsx","./src/pages/anomalies.tsx","./src/pages/funnel.tsx","./src/pages/login.tsx","./src/pages/overview.tsx","./src/pages/ranking.tsx","./src/pages/revenue.tsx","./src/pages/trends.tsx"],"version":"5.9.3"}

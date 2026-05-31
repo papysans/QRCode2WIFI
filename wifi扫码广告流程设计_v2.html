@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WiFi 扫码广告接入流程设计 v2</title>
+  <style>
+    :root {
+      --bg: #f4f0e7;
+      --paper: #fffdf8;
+      --paper-2: #f9f5ec;
+      --ink: #1d292d;
+      --muted: #66757b;
+      --line: #d8cfbf;
+      --teal: #158474;
+      --teal-soft: #dff3ee;
+      --amber: #bf8425;
+      --amber-soft: #faedd0;
+      --blue: #315d88;
+      --blue-soft: #e6eef8;
+      --red-soft: #f8e5dd;
+      --red: #a84d31;
+      --shadow: 0 16px 42px rgba(43, 34, 20, 0.09);
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        linear-gradient(135deg, rgba(21,132,116,0.06), transparent 26%),
+        linear-gradient(315deg, rgba(191,132,37,0.07), transparent 28%),
+        var(--bg);
+      color: var(--ink);
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+      line-height: 1.5;
+      letter-spacing: 0;
+    }
+    .wrap {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .hero-card, .side-card, .section, .panel, .phone, .desktop {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .hero-card {
+      border-radius: 24px;
+      padding: 26px;
+    }
+    .mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--teal);
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: .04em;
+    }
+    .mark::before {
+      content: "";
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+    h1 {
+      margin: 10px 0 10px;
+      font-size: 34px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    .lead {
+      color: var(--muted);
+      margin: 0;
+      max-width: 78ch;
+      font-size: 15px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .chip {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #45565d;
+      white-space: nowrap;
+    }
+    .chip.teal { color: #09675a; background: var(--teal-soft); border-color: #bee8df; }
+    .chip.amber { color: #865d10; background: var(--amber-soft); border-color: #ead096; }
+    .chip.blue { color: #2c5079; background: var(--blue-soft); border-color: #c9d8ed; }
+    .side-card {
+      border-radius: 24px;
+      padding: 20px;
+      display: grid;
+      gap: 12px;
+    }
+    h2, h3, h4 { margin: 0; line-height: 1.2; }
+    .side-card h2, .section h2, .panel h3 { font-size: 16px; }
+    .rule {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid #e5dac9;
+      background: #fbf8f1;
+    }
+    .rule b {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #14282d;
+      color: #fff;
+      font-size: 12px;
+    }
+    .rule p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .section {
+      margin-top: 18px;
+      border-radius: 24px;
+      padding: 18px;
+      background: rgba(255,253,248,.74);
+    }
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .section-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 86ch;
+    }
+    .lanes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .lane {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: linear-gradient(180deg, #fffefb, #f8f3e9);
+      padding: 16px;
+    }
+    .lane-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .lane-top span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .journey-card {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      min-height: 470px;
+      overflow: hidden;
+    }
+    .journey-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 8px;
+      background: linear-gradient(90deg, var(--teal), #75c8b6);
+    }
+    .journey-card.ad::before { background: linear-gradient(90deg, var(--amber), #e2b657); }
+    .journey-card.blue::before { background: linear-gradient(90deg, var(--blue), #6d8cb2); }
+    .step-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .num {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--teal);
+      color: white;
+      font-weight: 800;
+      font-size: 12px;
+      flex: 0 0 auto;
+    }
+    .journey-card.ad .num { background: var(--amber); }
+    .journey-card.blue .num { background: var(--blue); }
+    .step-head strong { font-size: 14px; }
+    .desc {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .phone {
+      border-radius: 26px;
+      padding: 12px;
+      aspect-ratio: 9 / 17.5;
+      background: linear-gradient(180deg, #ffffff, #f7f2e8);
+      overflow: hidden;
+    }
+    .desktop {
+      border-radius: 18px;
+      padding: 12px;
+      min-height: 250px;
+      background: linear-gradient(180deg, #ffffff, #f7f2e8);
+      overflow: hidden;
+    }
+    .status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #09675a;
+      background: var(--teal-soft);
+      border: 1px solid #bee8df;
+    }
+    .pill.amber { color: #865d10; background: var(--amber-soft); border-color: #ead096; }
+    .pill.blue { color: #2c5079; background: var(--blue-soft); border-color: #c9d8ed; }
+    .ui-card {
+      border: 1px solid #e5dccf;
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .ui-card h4 {
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .input {
+      min-height: 34px;
+      border: 1px solid #ddd3c4;
+      border-radius: 12px;
+      padding: 8px 10px;
+      color: #354349;
+      background: #fbf9f4;
+      font-size: 12px;
+      margin-top: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .input span:first-child { color: var(--muted); }
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 999px;
+      min-height: 38px;
+      padding: 9px 13px;
+      margin-top: 10px;
+      color: white;
+      background: linear-gradient(90deg, var(--teal), #38a895);
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: 0 10px 20px rgba(21,132,116,.18);
+    }
+    .btn.amber {
+      background: linear-gradient(90deg, var(--amber), #d8a53e);
+      box-shadow: 0 10px 20px rgba(191,132,37,.18);
+    }
+    .btn.blue {
+      background: linear-gradient(90deg, var(--blue), #5f81ab);
+      box-shadow: 0 10px 20px rgba(49,93,136,.18);
+    }
+    .shop-list {
+      display: grid;
+      gap: 8px;
+    }
+    .shop-row {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px solid #e4dacb;
+      background: #fbf8f1;
+      font-size: 12px;
+    }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--teal), #8bd0c1);
+    }
+    .shop-row small, .muted { color: var(--muted); }
+    .qr {
+      width: 112px;
+      height: 112px;
+      margin: 12px auto 8px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #d9d0c2;
+      border-radius: 14px;
+    }
+    .qr i {
+      background: #1f2a2e;
+      border-radius: 3px;
+    }
+    .qr i:nth-child(3n), .qr i:nth-child(5n) { background: transparent; }
+    .adbox {
+      min-height: 170px;
+      border-radius: 18px;
+      border: 1px solid #e7d2a6;
+      background: linear-gradient(160deg, #fff6dc, #fffdf7);
+      padding: 14px;
+      display: grid;
+      align-content: center;
+      text-align: center;
+      color: #765412;
+    }
+    .progress {
+      height: 8px;
+      border-radius: 999px;
+      background: #ead4a1;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress span {
+      display: block;
+      width: 72%;
+      height: 100%;
+      background: var(--amber);
+    }
+    .data-map {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .panel {
+      border-radius: 22px;
+      padding: 16px;
+      min-height: 190px;
+    }
+    .panel p, .panel li {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .panel ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+    .model {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .model-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 10px;
+      border: 1px solid #e5dccf;
+      background: #fbf8f1;
+      border-radius: 14px;
+      padding: 10px;
+      color: #39494f;
+      font-size: 12px;
+    }
+    .model-row b { color: var(--ink); }
+    @media (max-width: 1220px) {
+      .hero, .lanes, .flow-grid, .data-map { grid-template-columns: 1fr 1fr; }
+      .journey-card { min-height: auto; }
+    }
+    @media (max-width: 760px) {
+      .wrap { padding: 16px 12px 28px; }
+      .hero, .lanes, .flow-grid, .data-map { grid-template-columns: 1fr; }
+      h1 { font-size: 28px; }
+      .section-head { flex-direction: column; align-items: flex-start; }
+      .model-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="mark">V2 / ONE IDENTITY, TWO ENTRY POINTS</div>
+        <h1>WiFi 广告小程序流程设计稿</h1>
+        <p class="lead">
+          这版把产品逻辑收敛成一个微信身份模型：用户自己打开小程序就是“我的店铺”，扫码进入就是“连接当前店铺”。不预先区分谁是商家，谁创建店铺，谁就管理该店铺。
+        </p>
+        <div class="chips">
+          <span class="chip teal">微信 openid 作为账号</span>
+          <span class="chip blue">shop_id 作为二维码入口</span>
+          <span class="chip amber">广告完成后连接</span>
+          <span class="chip">店铺页面统一模板</span>
+          <span class="chip">用户只看到当前店铺</span>
+        </div>
+      </div>
+      <aside class="side-card">
+        <h2>核心规则</h2>
+        <div class="rule">
+          <b>01</b>
+          <p>无需先认证“商家身份”。任何微信用户都可以创建店铺，创建后自动成为该店铺 owner。</p>
+        </div>
+        <div class="rule">
+          <b>02</b>
+          <p>管理权限只看 owner_openid。当前 openid 等于店铺 owner_openid，才允许编辑 WiFi 和二维码。</p>
+        </div>
+        <div class="rule">
+          <b>03</b>
+          <p>扫码入口只带 sid。用户扫码后读取该 sid 对应门店，只能连接当前门店 WiFi。</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>两个入口，不同旅程</h2>
+          <p>同一个小程序，不同进入方式决定当前页面：自己打开就是管理自己的店铺；扫店铺码就是进入该店铺 WiFi 连接页。</p>
+        </div>
+      </div>
+      <div class="lanes">
+        <div class="lane">
+          <div class="lane-top">
+            <h3>入口 A：用户自己打开小程序</h3>
+            <span>管理路径</span>
+          </div>
+          <div class="model">
+            <div class="model-row"><b>首页</b><span>我的店铺列表，空状态提示创建店铺</span></div>
+            <div class="model-row"><b>创建店铺</b><span>填写店铺名称、WiFi 名称、密码、可选外链</span></div>
+            <div class="model-row"><b>店铺详情</b><span>修改配置、生成二维码、查看基础数据</span></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-top">
+            <h3>入口 B：顾客扫门店二维码</h3>
+            <span>连接路径</span>
+          </div>
+          <div class="model">
+            <div class="model-row"><b>扫码</b><span>小程序码携带 sid，例如 sid=Ab8K29</span></div>
+            <div class="model-row"><b>门店页</b><span>展示当前店名和连接按钮，不展示其他商家</span></div>
+            <div class="model-row"><b>广告后连接</b><span>看完激励视频后调用 wx.connectWifi</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>页面设计稿和顺序</h2>
+          <p>下面按真实产品路径排列。前四个是创建和管理店铺，后两个是顾客扫码后的连接流程。</p>
+        </div>
+      </div>
+      <div class="flow-grid">
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">1</span><strong>我的店铺首页</strong></div>
+          <p class="desc">打开小程序后，用微信登录态读取当前 openid 名下店铺。</p>
+          <div class="phone">
+            <div class="status"><span>09:41</span><span class="pill blue">我的店铺</span></div>
+            <div class="ui-card">
+              <h4>Peter 的门店</h4>
+              <p class="muted" style="margin:0;font-size:12px;">你创建的店铺会出现在这里。</p>
+              <button class="btn blue">创建店铺</button>
+            </div>
+            <div class="ui-card">
+              <h4>已有店铺</h4>
+              <div class="shop-list">
+                <div class="shop-row">
+                  <div class="avatar"></div>
+                  <div><strong>XX咖啡</strong><br><small>今日扫码 128</small></div>
+                  <span>进入</span>
+                </div>
+                <div class="shop-row">
+                  <div class="avatar" style="background:linear-gradient(135deg,#315d88,#91a9c7);"></div>
+                  <div><strong>一号棋牌室</strong><br><small>今日扫码 76</small></div>
+                  <span>进入</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">2</span><strong>创建店铺 / 填 WiFi</strong></div>
+          <p class="desc">第一版只保留必要字段，降低商家创建成本。</p>
+          <div class="phone">
+            <div class="status"><span>09:42</span><span class="pill blue">创建店铺</span></div>
+            <div class="ui-card">
+              <h4>基础信息</h4>
+              <div class="input"><span>店铺名称</span><strong>XX咖啡</strong></div>
+              <div class="input"><span>WiFi 名称</span><strong>XX_Coffee_Free</strong></div>
+              <div class="input"><span>WiFi 密码</span><strong>••••••••</strong></div>
+            </div>
+            <div class="ui-card">
+              <h4>可选展示</h4>
+              <div class="input"><span>点评/团购链接</span><strong>已填写</strong></div>
+              <div class="input"><span>联系电话</span><strong>可不填</strong></div>
+            </div>
+            <button class="btn blue">保存并生成二维码</button>
+          </div>
+        </article>
+
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">3</span><strong>店铺详情 / 管理</strong></div>
+          <p class="desc">只有 owner_openid 能进入这个页面编辑该店铺。</p>
+          <div class="phone">
+            <div class="status"><span>09:43</span><span class="pill blue">店铺管理</span></div>
+            <div class="ui-card">
+              <h4>XX咖啡</h4>
+              <div class="input"><span>WiFi</span><strong>XX_Coffee_Free</strong></div>
+              <div class="input"><span>二维码</span><strong>已生成</strong></div>
+              <div class="input"><span>状态</span><strong>正常展示</strong></div>
+            </div>
+            <div class="ui-card">
+              <h4>今日数据</h4>
+              <div class="input"><span>扫码</span><strong>128</strong></div>
+              <div class="input"><span>广告完成</span><strong>76</strong></div>
+              <div class="input"><span>连接点击</span><strong>71</strong></div>
+            </div>
+            <button class="btn blue">编辑 WiFi 信息</button>
+          </div>
+        </article>
+
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">4</span><strong>生成二维码</strong></div>
+          <p class="desc">二维码只携带 sid，不携带明文 WiFi 密码。</p>
+          <div class="phone">
+            <div class="status"><span>09:44</span><span class="pill blue">门店二维码</span></div>
+            <div class="ui-card" style="text-align:center;">
+              <h4>XX咖啡专属二维码</h4>
+              <div class="qr">
+                <i></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i></i>
+              </div>
+              <p class="muted" style="margin:0;font-size:12px;">路径：/connect?sid=Ab8K29</p>
+            </div>
+            <button class="btn blue">下载打印版二维码</button>
+            <button class="btn" style="background:#26363b;">复制店铺链接</button>
+          </div>
+        </article>
+
+        <article class="journey-card">
+          <div class="step-head"><span class="num">5</span><strong>顾客扫码进入</strong></div>
+          <p class="desc">顾客只进入当前店铺连接页，看不到平台内其他店铺。</p>
+          <div class="phone">
+            <div class="status"><span>09:45</span><span class="pill">当前门店</span></div>
+            <div class="ui-card">
+              <h4>XX咖啡</h4>
+              <p class="muted" style="margin:0;font-size:12px;">你正在连接本店免费 WiFi。</p>
+              <div class="input"><span>WiFi 名称</span><strong>XX_Coffee_Free</strong></div>
+            </div>
+            <button class="btn amber">看广告后连接 WiFi</button>
+            <div class="ui-card">
+              <h4>店铺推荐</h4>
+              <div class="input"><span>大众点评</span><strong>打开</strong></div>
+              <div class="input"><span>美团团购</span><strong>打开</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="journey-card ad">
+          <div class="step-head"><span class="num">6</span><strong>15 秒广告</strong></div>
+          <p class="desc">广告完成回调成功后，才显示连接按钮。</p>
+          <div class="phone">
+            <div class="status"><span>09:46</span><span class="pill amber">激励视频</span></div>
+            <div class="adbox">
+              <h4>广告播放中</h4>
+              <p style="margin:8px 0 0;font-size:12px;">剩余 4 秒后可连接 WiFi</p>
+              <div class="progress"><span></span></div>
+            </div>
+            <div class="ui-card">
+              <h4>观看要求</h4>
+              <div class="input"><span>完成状态</span><strong>未完成</strong></div>
+              <div class="input"><span>跳过广告</span><strong>不可连接</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="journey-card">
+          <div class="step-head"><span class="num">7</span><strong>一键连接 WiFi</strong></div>
+          <p class="desc">广告完成后调用微信 WiFi API，失败时给密码兜底。</p>
+          <div class="phone">
+            <div class="status"><span>09:47</span><span class="pill">可连接</span></div>
+            <div class="ui-card">
+              <h4>XX_Coffee_Free</h4>
+              <div class="input"><span>广告</span><strong>已完成</strong></div>
+              <div class="input"><span>连接权限</span><strong>已解锁</strong></div>
+            </div>
+            <button class="btn">一键连接 WiFi</button>
+            <div class="ui-card">
+              <h4>连接失败兜底</h4>
+              <div class="input"><span>WiFi 密码</span><strong>点击展开</strong></div>
+              <div class="input"><span>重新连接</span><strong>可重试</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">8</span><strong>数据页</strong></div>
+          <p class="desc">先只展示基础数据，不急着做提现、分成和商家认证。</p>
+          <div class="phone">
+            <div class="status"><span>09:48</span><span class="pill blue">数据</span></div>
+            <div class="ui-card">
+              <h4>XX咖啡本月</h4>
+              <div class="input"><span>扫码人数</span><strong>3,420</strong></div>
+              <div class="input"><span>广告完成</span><strong>2,108</strong></div>
+              <div class="input"><span>连接点击</span><strong>1,967</strong></div>
+            </div>
+            <div class="ui-card">
+              <h4>平台判断</h4>
+              <div class="input"><span>模式</span><strong>暂不分成</strong></div>
+              <div class="input"><span>目标</span><strong>验证使用量</strong></div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>数据和权限注解</h2>
+          <p>这部分是设计稿背后的实现逻辑，确保你后面做产品时不会把用户、商家、店铺和二维码关系弄乱。</p>
+        </div>
+      </div>
+      <div class="data-map">
+        <div class="panel">
+          <h3>用户身份</h3>
+          <ul>
+            <li>微信 openid 是唯一账号。</li>
+            <li>不需要预先选择“我是商家”。</li>
+            <li>创建店铺后，该用户就是 owner。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>店铺权限</h3>
+          <ul>
+            <li>shop.owner_openid = 当前用户 openid 才能编辑。</li>
+            <li>一个 openid 可以管理多个店铺。</li>
+            <li>其他用户不能进入店铺管理页。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>扫码入口</h3>
+          <ul>
+            <li>二维码携带 sid，不带密码。</li>
+            <li>sid 解析到 shop_id。</li>
+            <li>顾客页面只读当前 shop 配置。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>广告连接</h3>
+          <ul>
+            <li>广告完成后解锁连接按钮。</li>
+            <li>调用 wx.connectWifi 发起连接。</li>
+            <li>失败时显示密码作为兜底。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

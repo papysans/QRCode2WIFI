@@ -1,0 +1,29 @@
+<view class="wrap">
+  <view class="card">
+    <h2>基础信息</h2>
+    <view class="field">
+      <view class="label">店铺名称</view>
+      <input class="input" data-field="name" bindinput="onInput" placeholder="如 XX咖啡" />
+    </view>
+    <view class="field">
+      <view class="label">WiFi 名称</view>
+      <input class="input" data-field="wifiSsid" bindinput="onInput" placeholder="如 XX_Coffee_Free" />
+    </view>
+    <view class="field">
+      <view class="label">WiFi 密码</view>
+      <input class="input" data-field="wifiPassword" bindinput="onInput" placeholder="WiFi 密码" />
+    </view>
+  </view>
+  <view class="card">
+    <h2>可选展示</h2>
+    <view class="field">
+      <view class="label">点评/团购链接</view>
+      <input class="input" data-field="reviewLink" bindinput="onInput" placeholder="可不填" />
+    </view>
+    <view class="field">
+      <view class="label">联系电话</view>
+      <input class="input" data-field="phone" bindinput="onInput" placeholder="可不填" />
+    </view>
+  </view>
+  <view class="btn" bindtap="save">{{saving ? '保存中...' : '保存并生成二维码'}}</view>
+</view>

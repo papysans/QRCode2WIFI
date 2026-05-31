@@ -1,0 +1,21 @@
+<view class="wrap">
+  <view class="card">
+    <h2>{{ssid || 'WiFi'}}</h2>
+    <view class="row"><text class="muted">广告</text><text>已完成</text></view>
+    <view class="row"><text class="muted">连接权限</text><text>{{unlocked ? '已解锁' : '解锁中...'}}</text></view>
+  </view>
+
+  <view class="btn" bindtap="connect" wx:if="{{unlocked && !connected}}">一键连接 WiFi</view>
+  <view class="card" wx:if="{{connected}}" style="text-align:center">
+    <text style="color:#158474;font-weight:700">✓ 已连接 {{ssid}}</text>
+  </view>
+
+  <view class="card" wx:if="{{failed}}">
+    <h2>连接失败兜底</h2>
+    <view class="row" bindtap="togglePassword">
+      <text class="muted">WiFi 密码</text>
+      <text>{{showPassword ? password : '点击展开'}}</text>
+    </view>
+    <view class="btn ghost" bindtap="copyPassword">复制密码手动连接</view>
+  </view>
+</view>
