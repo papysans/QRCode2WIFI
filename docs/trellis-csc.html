@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trellis × CSC：AI 编码工作流治理</title>
+  <style>
+    :root {
+      --bg: #f4f0e7;
+      --paper: #fffdf8;
+      --paper-2: #f9f5ec;
+      --ink: #1d292d;
+      --muted: #66757b;
+      --line: #d8cfbf;
+      --teal: #158474;
+      --teal-soft: #dff3ee;
+      --amber: #bf8425;
+      --amber-soft: #faedd0;
+      --blue: #315d88;
+      --blue-soft: #e6eef8;
+      --red-soft: #f8e5dd;
+      --red: #a84d31;
+      --shadow: 0 16px 42px rgba(43, 34, 20, 0.09);
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        linear-gradient(135deg, rgba(21,132,116,0.06), transparent 26%),
+        linear-gradient(315deg, rgba(191,132,37,0.07), transparent 28%),
+        var(--bg);
+      color: var(--ink);
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+      line-height: 1.5;
+      letter-spacing: 0;
+    }
+    .wrap {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .hero-card, .side-card, .section, .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .hero-card {
+      border-radius: 24px;
+      padding: 26px;
+    }
+    .mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--teal);
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: .04em;
+    }
+    .mark::before {
+      content: "";
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+    h1 {
+      margin: 10px 0 10px;
+      font-size: 34px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    .lead {
+      color: var(--muted);
+      margin: 0;
+      max-width: 78ch;
+      font-size: 15px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .chip {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #45565d;
+      white-space: nowrap;
+    }
+    .chip.teal { color: #09675a; background: var(--teal-soft); border-color: #bee8df; }
+    .chip.amber { color: #865d10; background: var(--amber-soft); border-color: #ead096; }
+    .chip.blue { color: #2c5079; background: var(--blue-soft); border-color: #c9d8ed; }
+    .side-card {
+      border-radius: 24px;
+      padding: 20px;
+      display: grid;
+      gap: 12px;
+    }
+    h2, h3, h4 { margin: 0; line-height: 1.2; }
+    .side-card h2, .section h2, .panel h3 { font-size: 16px; }
+    .rule {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid #e5dac9;
+      background: #fbf8f1;
+    }
+    .rule b {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #14282d;
+      color: #fff;
+      font-size: 12px;
+    }
+    .rule strong { font-size: 13px; display: block; margin-bottom: 3px; }
+    .rule p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .section {
+      margin-top: 18px;
+      border-radius: 24px;
+      padding: 18px;
+      background: rgba(255,253,248,.74);
+    }
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .section-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 86ch;
+    }
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .flow-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .journey-card {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 14px 14px 16px;
+      overflow: hidden;
+      align-content: start;
+    }
+    .journey-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 8px;
+      background: linear-gradient(90deg, var(--teal), #75c8b6);
+    }
+    .journey-card.ad::before { background: linear-gradient(90deg, var(--amber), #e2b657); }
+    .journey-card.blue::before { background: linear-gradient(90deg, var(--blue), #6d8cb2); }
+    .step-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .num {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--teal);
+      color: white;
+      font-weight: 800;
+      font-size: 12px;
+      flex: 0 0 auto;
+    }
+    .journey-card.ad .num { background: var(--amber); }
+    .journey-card.blue .num { background: var(--blue); }
+    .step-head strong { font-size: 14px; }
+    .desc {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .ui-card {
+      border: 1px solid #e5dccf;
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .ui-card h4 {
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .ui-card p { margin: 0; }
+    .input {
+      min-height: 34px;
+      border: 1px solid #ddd3c4;
+      border-radius: 12px;
+      padding: 8px 10px;
+      color: #354349;
+      background: #fbf9f4;
+      font-size: 12px;
+      margin-top: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .input span:first-child { color: var(--muted); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #09675a;
+      background: var(--teal-soft);
+      border: 1px solid #bee8df;
+    }
+    .pill.amber { color: #865d10; background: var(--amber-soft); border-color: #ead096; }
+    .pill.blue { color: #2c5079; background: var(--blue-soft); border-color: #c9d8ed; }
+    .muted { color: var(--muted); }
+    .artifact {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .artifact code {
+      font-family: "SFMono-Regular", "Consolas", "Menlo", monospace;
+      background: #f1ebdd;
+      border: 1px solid #e5dac9;
+      border-radius: 8px;
+      padding: 2px 6px;
+      color: #4b5a40;
+      font-size: 11px;
+    }
+    .data-map {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .panel {
+      border-radius: 22px;
+      padding: 16px;
+    }
+    .panel .pin {
+      display: inline-flex;
+      width: 26px; height: 26px;
+      align-items: center; justify-content: center;
+      border-radius: 8px;
+      background: var(--teal-soft);
+      color: #09675a;
+      font-weight: 800;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .panel p, .panel li {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .panel p { margin: 0; }
+    .panel ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+    .model {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .model-row {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 10px;
+      border: 1px solid #e5dccf;
+      background: #fbf8f1;
+      border-radius: 14px;
+      padding: 11px;
+      color: #39494f;
+      font-size: 12.5px;
+      align-items: center;
+    }
+    .model-row .from {
+      color: var(--muted);
+      position: relative;
+      padding-right: 14px;
+    }
+    .model-row .from::after {
+      content: "→";
+      position: absolute;
+      right: 0;
+      color: var(--amber);
+      font-weight: 800;
+    }
+    .model-row .to b { color: var(--ink); }
+    .model-row .to { color: #2f3e44; }
+    .model-head {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 10px;
+      padding: 0 11px;
+      margin-top: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .03em;
+    }
+    .model-head .h1 { color: var(--muted); }
+    .model-head .h2 { color: var(--teal); }
+    .banner {
+      margin-top: 18px;
+      border-radius: 24px;
+      padding: 28px 26px;
+      background: linear-gradient(120deg, #14282d, #1d4f48 55%, #2a5d3f);
+      color: #f4f0e7;
+      box-shadow: var(--shadow);
+      border: 1px solid #0d1a1d;
+    }
+    .banner .mark { color: #8fe0d1; }
+    .banner .mark::before { background: #8fe0d1; }
+    .banner h2 {
+      font-size: 24px;
+      margin: 10px 0 8px;
+      line-height: 1.2;
+      color: #fffdf8;
+    }
+    .banner p {
+      margin: 0;
+      color: #d9d2c1;
+      font-size: 14px;
+      max-width: 90ch;
+    }
+    .callout {
+      margin: 0 0 14px;
+      border-radius: 18px;
+      padding: 16px 18px;
+      background: linear-gradient(120deg, var(--amber-soft), #fffdf7);
+      border: 1px solid #ead096;
+      color: #6f4d0f;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .callout b { color: #4d350a; }
+    @media (max-width: 1220px) {
+      .hero, .flow-grid, .data-map { grid-template-columns: 1fr 1fr; }
+      .flow-grid.three { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      .wrap { padding: 16px 12px 28px; }
+      .hero, .flow-grid, .flow-grid.three, .data-map { grid-template-columns: 1fr; }
+      h1 { font-size: 28px; }
+      .section-head { flex-direction: column; align-items: flex-start; }
+      .model-row, .model-head { grid-template-columns: 1fr; }
+      .model-row .from::after { content: "↓"; right: auto; left: 0; position: static; margin-left: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="mark">FRAMEWORK / TRELLIS × CSC</div>
+        <h1>把 Trellis 引入 CSC 的工作流治理</h1>
+        <p class="lead">
+          Trellis 是「AI 编码的脚手架」——把项目规范、工作流、跨会话记忆自动注入 AI，让 AI 在「规划→执行→收尾」的轨道上工作，而不是凭一次性 prompt 即兴发挥。本页讲它怎么运作、好在哪、以及对 CSC（我们基于 Claude Code 的深度分支产品）意味着什么。
+        </p>
+        <div class="chips">
+          <span class="chip teal">规范注入而非记忆</span>
+          <span class="chip blue">每轮状态复述</span>
+          <span class="chip">文件优先持久化</span>
+          <span class="chip amber">子代理分工</span>
+          <span class="chip">一份流程多端运行</span>
+        </div>
+      </div>
+      <aside class="side-card">
+        <h2>核心理念</h2>
+        <div class="rule">
+          <b>01</b>
+          <div>
+            <strong>Plan before code</strong>
+            <p>先想清楚再写。规划阶段把需求、约束、方案收敛成文档，再进入编码，避免 AI 边写边猜。</p>
+          </div>
+        </div>
+        <div class="rule">
+          <b>02</b>
+          <div>
+            <strong>Specs injected, not remembered</strong>
+            <p>规范靠注入不靠记忆。每轮把相关规范喂进上下文，而不是寄望模型「记得」几十轮前说过的规矩。</p>
+          </div>
+        </div>
+        <div class="rule">
+          <b>03</b>
+          <div>
+            <strong>Persist everything</strong>
+            <p>research、决策、教训全部落文件。对话会被压缩，文件不会——记忆的真源是磁盘，不是上下文窗口。</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Section 1 -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>Section 1 · 三阶段工作流</h2>
+          <p>Trellis 把任务拆成「规划 → 执行 → 收尾」三段，每段有明确产出物（artifact）。每一步交给带干净上下文的角色去做，不让一个会话从头扛到尾。</p>
+        </div>
+      </div>
+      <div class="flow-grid three">
+        <article class="journey-card blue">
+          <div class="step-head"><span class="num">1</span><strong>Plan · 规划</strong></div>
+          <p class="desc">brainstorm 阶段：一次只问一个问题，能查就别问，给出选项让人选，先发散再收敛。把模糊需求逼成确定决策。</p>
+          <div class="ui-card">
+            <h4>规划纪律</h4>
+            <div class="input"><span>提问节奏</span><strong>一次一个问题</strong></div>
+            <div class="input"><span>信息获取</span><strong>能查就别问</strong></div>
+            <div class="input"><span>决策方式</span><strong>给选项 / 发散→收敛</strong></div>
+          </div>
+          <div class="artifact"><span>产出</span><code>prd.md</code></div>
+        </article>
+
+        <article class="journey-card">
+          <div class="step-head"><span class="num">2</span><strong>Execute · 执行</strong></div>
+          <p class="desc">实现子代理（trellis-implement）按 prd 写代码；检查子代理（trellis-check）以干净上下文复核。两者分工，各拿只含所需文件的新窗口，互不污染。</p>
+          <div class="ui-card">
+            <h4>双角色分工</h4>
+            <div class="input"><span>实现</span><strong>trellis-implement</strong></div>
+            <div class="input"><span>检查</span><strong>trellis-check</strong></div>
+            <div class="input"><span>上下文</span><strong>各自干净窗口</strong></div>
+          </div>
+          <div class="artifact"><span>产出</span><code>implement.jsonl</code><code>check.jsonl</code></div>
+        </article>
+
+        <article class="journey-card ad">
+          <div class="step-head"><span class="num">3</span><strong>Finish · 收尾</strong></div>
+          <p class="desc">把这轮学到的东西写回 spec——知识复利：下次同类任务直接吃到这次的经验，而不是重新踩坑。完成后再提交。</p>
+          <div class="ui-card">
+            <h4>知识沉淀</h4>
+            <div class="input"><span>动作</span><strong>学习写回 spec</strong></div>
+            <div class="input"><span>价值</span><strong>知识复利</strong></div>
+            <div class="input"><span>收口</span><strong>提交</strong></div>
+          </div>
+          <div class="artifact"><span>产出</span><code>spec/</code><code>journal</code></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>Section 2 · Trellis 真正聪明的设计</h2>
+          <p>这套框架的价值不在「有几个阶段」，而在它对抗长会话失效、上下文漂移的几个工程化决策。下面 6 点是它真正可借鉴的地方。</p>
+        </div>
+      </div>
+      <div class="data-map">
+        <div class="panel">
+          <span class="pin">1</span>
+          <h3>每轮状态面包屑注入</h3>
+          <p>每一轮用户消息都注入「你现在在哪个阶段 + 下一步什么必做」，对抗长会话里指令逐渐衰减、被遗忘的问题。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">2</span>
+          <h3>workflow.md 是唯一真源</h3>
+          <p>脚本只是解析器。改流程 = 改一个 markdown 文件，不碰任何代码。流程定义与执行引擎彻底解耦。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">3</span>
+          <h3>必做步骤必须每轮复述</h3>
+          <p>血的洞察：required 步骤若不进每轮面包屑，就会被 AI 静默跳过。他们用回归测试守住「required ↔ 面包屑」的对应关系。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">4</span>
+          <h3>文件优先的持久记忆</h3>
+          <p>research / prd / spec / journal 全部落在文件里。会话可以被压缩、可以重开，跨会话信息一条都不丢。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">5</span>
+          <h3>按任务路由上下文</h3>
+          <p>implement.jsonl / check.jsonl 显式声明每个子代理该读哪些规范——把对的上下文，精确地给对的 agent。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">6</span>
+          <h3>子代理分工 + 干净上下文</h3>
+          <p>research / implement / check 各拿只含所需文件的新窗口。实测中 check 子代理跑运行时冒烟，抓出了单测漏掉的崩溃。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>Section 3 · 对 CSC 的提升</h2>
+          <p>这是本页最重要的部分。Trellis 验证了「AI 编码需要一个治理层」，但它的实现方式有天花板，而那个天花板恰好是 CSC 能突破的。</p>
+        </div>
+      </div>
+      <p class="callout">
+        <b>核心论点：</b>Trellis 是从外部用 hook / skill「焊」在 Claude Code 上的——所有约束本质上是 prompt 软约束。而 <b>CSC 拥有 harness</b>，能把这些能力从「prompt 软约束」升级为「引擎硬保证」：同样的治理思想，CSC 可以做进引擎，不靠模型自觉。
+      </p>
+      <div class="model-head">
+        <div class="h1">Trellis 的外挂做法</div>
+        <div class="h2">CSC 可内化的原生能力</div>
+      </div>
+      <div class="model">
+        <div class="model-row">
+          <div class="from">每轮用 hook 注入状态</div>
+          <div class="to"><b>把「每轮状态机复述」做成一等公民</b>，用户不用手写 hook，引擎自动维护。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">required ↔ 面包屑靠回归测试守</div>
+          <div class="to"><b>引擎层强制 required 步骤</b>，不靠 prompt 软约束——结构上跳不过去。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">workflow.md 当真源</div>
+          <div class="to"><b>把「工作流即 markdown / 引擎即解析器」做成平台特性</b>，非工程师也能改流程。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">hook 拼 JSONL 注入规范</div>
+          <div class="to"><b>原生 per-task 上下文路由 API</b>，按任务声明所需规范，引擎负责精准投喂。</div>
+        </div>
+        <div class="model-row">
+          <div class="from"><code style="background:#f1ebdd;border:1px solid #e5dac9;border-radius:6px;padding:1px 5px;">Active task:</code> 兜底行（Windows hook 会静默跳过）</div>
+          <div class="to"><b>改 harness 后注入可靠</b>，从根上省掉这类兜底 hack。</div>
+        </div>
+        <div class="model-row">
+          <div class="from">文件优先记忆约定</div>
+          <div class="to"><b>做成项目级原生记忆模型</b>，记忆是平台能力而非约定俗成。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4 -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>Section 4 · 务实看待（局限）</h2>
+          <p>客观列出 Trellis 当前的代价与短板，建立可信度。要点在于：这些「软」的地方，恰是 CSC 用 harness 做「硬」的机会。</p>
+        </div>
+      </div>
+      <div class="data-map">
+        <div class="panel">
+          <span class="pin">01</span>
+          <h3>仪式偏重 / token 开销</h3>
+          <p>每轮注入状态与规范，带来固定的上下文开销。Trellis 留了逃生门（可跳过部分仪式），但默认路径偏重。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">02</span>
+          <h3>软约束本质</h3>
+          <p>所有约束最终靠模型「听话」执行，因此存在静默跳过的风险——这正是引擎硬保证要解决的核心问题。</p>
+        </div>
+        <div class="panel">
+          <span class="pin">03</span>
+          <h3>学习曲线 / 耦合成本</h3>
+          <p>团队需要理解整套工作流与 artifact 约定；markdown ↔ 解析器的耦合也带来持续维护成本。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 结尾条幅 -->
+    <section class="banner">
+      <div class="mark">CONCLUSION / POSITIONING</div>
+      <h2>Trellis 验证了 AI 编码治理层的需求与形态；CSC 拥有 harness，能把它做得更原生、更可靠。</h2>
+      <p>把 Trellis 的治理思想吸收进 CSC：能在 prompt 层做的，CSC 在引擎层做；能靠回归测试守的，CSC 用结构保证。这就是从「外挂脚手架」到「内生平台能力」的跃迁。</p>
+    </section>
+  </main>
+</body>
+</html>
