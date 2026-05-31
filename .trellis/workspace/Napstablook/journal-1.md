@@ -19,3 +19,38 @@
 
 **后续**：接微信 code2session / wxacode.getUnlimited / 激励视频验签；admin 端口默认 5173 与本机 dystore-web 冲突，需改端口。
 
+
+
+## Session 1: WiFi扫码广告小程序+运营监控后台+真实微信适配+Trellis介绍
+
+**Date**: 2026-05-31
+**Task**: WiFi扫码广告小程序+运营监控后台+真实微信适配+Trellis介绍
+**Branch**: `main`
+
+### Summary
+
+全栈 monorepo MVP（小程序8屏+NestJS后端+React监控后台），可切换适配层默认mock全链路跑通；真实微信适配层(code2session/getUnlimited/激励视频回调防伪)；39后端+5前端测试；trellis-check抓出运行时DI崩溃；知识沉淀进backend/quality-guidelines与guides；另产出小程序浏览器预览与Trellis×CSC介绍页。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2fe1012` | (see git log) |
+| `5d261a6` | (see git log) |
+| `117984e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
