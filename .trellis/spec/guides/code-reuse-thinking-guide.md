@@ -103,3 +103,18 @@ When you've made similar changes to multiple files:
 - [ ] No copy-pasted logic that should be shared
 - [ ] Constants defined in one place
 - [ ] Similar patterns follow same structure
+
+---
+
+## 本项目（QRCode2WIFI monorepo）：跨端契约一律放 `packages/shared`
+
+三端（`apps/miniprogram` / `apps/server` / `apps/admin`）共享的**类型 / 枚举 / API 契约**只在 `@q2w/shared` 定义一次：
+- 事件枚举 `EventType`、漏斗步骤 `FUNNEL_STEPS`
+- 店铺模型 `Shop` / `PublicShopView` / `ShopStat`
+- 各 API 的 request/response DTO
+
+**Don't**: 在小程序里手写一份 `{ SCAN:'scan', ... }`、在后端再写一份 string union——字段一改就三端漂移。
+**Do**: 改契约先改 `packages/shared/src/*`，server 的 class-validator DTO `implements` 共享接口，前端 import 类型。
+
+- [ ] 新增跨端字段时，是否回到 `packages/shared` 定义而非就地新建？
+- [ ] server 的 DTO 是否 `implements` 了 shared 的 request 接口（保证编译期对齐）？

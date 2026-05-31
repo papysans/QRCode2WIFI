@@ -160,3 +160,21 @@ Create detailed flow docs when:
 - Multiple teams are involved
 - Data format is complex
 - Feature has caused bugs before
+
+---
+
+## 本项目（QRCode2WIFI monorepo）专属检查项
+
+### 事件契约单一来源（小程序 ↔ 后端 ↔ 后台）
+
+埋点漏斗字段在三端流动（小程序上报 → 后端入库 → 后台展示）。**`EventType` 等契约只在 `packages/shared` 定义一次**，三端 import 复用——禁止在某一端各写一份字符串枚举。
+
+- [ ] 新增/改埋点事件时，先改 `packages/shared/src/events.ts`，再让三端引用
+- [ ] `DailyShopStat` 既被「事件上报实时累加」也被「Cron 重算对账」写入——改一处时确认另一处计数列映射一致
+
+### 改 DI / 模块装配后必须 boot-smoke（血的教训）
+
+NestJS 容器解析发生在**运行时启动**，不在 typecheck/单测里。本任务出现过：单测 39 全绿、typecheck 通过，但 `node dist/main.js` 因某 provider 构造参数无法解析而**启动即崩**。
+
+- [ ] 凡改了 `@Module` 的 providers / 新增 provider / 改构造注入 → 跑一次 `node dist/main.js`，确认 `Nest application successfully started` 且一个真实接口返回 200/201
+- [ ] 详见 `backend/quality-guidelines.md` 的「Nest provider 构造函数禁带不可注入参数」
